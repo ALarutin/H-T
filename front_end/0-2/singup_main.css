@@ -1,0 +1,163 @@
+body{
+    margin: 0;
+    font-family: Helvetica, Arial, san-serif,serif;
+    font-weight: bold;
+}
+
+
+.page{
+    display: flex;
+    justify-content: center;
+
+    margin: 5px 5px 0 5px;
+    height: 100ch;
+
+    background-image: url(references/hero-lg.jpg);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+
+    .content{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        width: 80%;
+
+        margin-top: 150px;
+
+        text-align: center;
+    }
+
+
+        .header{
+            margin-bottom: 20px;
+        }
+            .header__text{
+                color: white
+            }
+        
+
+        .main{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            width: 33.333%;
+
+            margin-bottom: 20px;
+        }
+
+
+            .input{
+                height: 30px;
+                width: 100%;
+
+                border-color: #f0f0f0;
+                border-width: 1px;
+                border-radius: 5px;
+
+                background-color: white;
+            }
+            .input::-webkit-input-placeholder{
+                font-family: Helvetica, Arial, san-serif,serif;
+                font-weight: bold;
+                font-size: 15px;
+
+                padding-left: 10px;
+
+                color: #8b8b8b;
+            }
+            .input::-moz-placeholder{
+                font-family: Helvetica, Arial, san-serif,serif;
+                font-weight: bold;
+                font-size: 15px;
+
+                padding-left: 10px;
+
+                color: #8b8b8b;
+            }
+            .input:focus{
+                outline: none;
+            }
+                .input__email{
+                    margin-bottom: 10px
+                }
+                /* .input__password{
+                } */
+
+
+        .footer{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            width: 50%;
+        }
+            .footer__button{
+                margin-bottom: 10px;
+
+                height: 30px;
+
+                font-family: Helvetica, Arial, san-serif,serif;
+                font-weight: bold;
+                font-size: 15px;
+
+                border-color: #00d570;
+                border-width: 1px;
+                border-radius: 5px;
+
+                background-color: #00d570;
+                color: white;
+
+                cursor: pointer;
+            }
+            .footer__button:hover{
+                border-color: #00d570;
+                border-width: 1px;
+                border-radius: 5px;
+
+                background-color: white;
+                color: #00d570;
+            }
+            .footer__button:active{
+                border-color: red;
+
+                background-color: red;
+                color: white;
+            }
+
+
+            .footer__link{
+                font-size: 15px;
+
+                color: white;
+            }
+            .footer__link:active{
+                color: red;
+            }
+
+
+            .button{
+                transition-duration: 0.5s;
+                cursor: pointer;
+            }
+            .button:focus{
+                outline: none;
+            }
+                .button__row{
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+
+
+
+
+        
+        
+        
+        
+
