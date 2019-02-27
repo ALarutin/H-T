@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>profile</title>
+    <!--<link rel="stylesheet" href="profile_main.css">-->
+    <style>
+        .button{
+            transition-duration: 0.5s;
+            cursor: pointer;
+        }
+        .button:focus{
+            outline: none;
+        }
+            .button__row{
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+
+        .page{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            font-family: Helvetica, Arial, san-serif,serif;
+            font-weight: bold;
+        }
+
+
+        .profile{
+            width: 33.333%;
+        }
+
+
+        .profile__border{
+            border: 1px solid #a9a9a9;
+        }
+            .header{
+                display: flex;
+                justify-content: left;
+                align-items: center;
+
+                width: 100%;
+                font-size: 150%;
+            }
+                .header__text{
+                    margin-left: 10px;
+                    font-size: 135%;
+                }
+
+
+                .header__border{
+                    height: 80px;
+                    border-bottom: 1px solid #a9a9a9;
+                }
+
+
+            .main{
+                width: 100%;
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }
+                .main__row{
+                    display: flex;
+                    align-items: center;
+
+                    height: 60px;
+                }
+
+
+                .main__block{
+                    display: flex;
+                    flex-direction: column;
+                    width: 50%;
+                }
+
+
+                .main__element{
+                    margin-left: 10px;
+                    margin-bottom: 5px;
+                }
+
+
+                .main__header-element_font{
+                    font-size: 80%;
+                }
+
+
+                .main__value-element_font{
+                    font-size: 90%;
+                    font-weight: normal;
+                }
+
+
+            .footer{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                height: 80px;
+                width: 100%;
+            }
+                .footer__border{
+                    border-top: 1px solid #a9a9a9;
+                }
+
+
+                .footer__button{
+                    align-items: center;
+
+                    width: 45%;
+                    height: 35px;
+                    margin-right: 1%;
+                    margin-left: 1%;
+
+                    font-family: Helvetica, Arial, san-serif,serif;
+                    font-weight: bold;
+                }
+
+
+                .footer__button_edit{
+                    background-color: #00d570;
+                    border-color: #00d570;
+                    color: white;
+                    fill: white;
+                }
+                .footer__button_edit:hover{
+                    background-color: white;
+                    border-color: #00d570;
+                    color: #00d570;
+                    fill: #00d570;
+                }
+                .footer__button_edit:active{
+                    background-color: red;
+                    border-color: red;
+                    color: white;
+                    fill: white;
+                }
+
+
+                .footer__button_delete{
+                    background-color: #f0f0f0;
+                    border-color: #f0f0f0;
+                    color: #8b8b8b;
+                    fill: #8b8b8b;
+                }
+                .footer__button_delete:hover{
+                    background-color: white;
+                    border-color: #f0f0f0;
+                    color: black;
+                    fill: black;
+                }
+                .footer__button_delete:active{
+                    background-color: red;
+                    border-color: red;
+                    color: white;
+                    fill: white;
+                }
+
+
+                .footer__text{
+                    font-size: 130%;
+                    padding-left: 10px;
+                    margin: 0;
+                }
+
+
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="profile profile__border">
+            <header class="header header__border">
+                <div class="header__text">
+                    Профиль
+                </div>
+            </header>
+
+            <main class="main">
+                <div class="main__row">
+                    <div class="main__block">
+                        <div class="main__element main__header-element_font">
+                            Фамилия
+                        </div>
+                        <div class="main__element main__value-element_font">
+                            Иванов
+                        </div>
+                    </div>
+                    <div class="main__block">
+                        <div class="main__element main__header-element_font">
+                            Имя
+                        </div>
+                        <div class="main__element main__value-element_font">
+                            Иван
+                        </div>
+                    </div>
+                </div>
+                <div class="main__row">
+                                    <div class="main__block">
+                        <div class="main__element main__header-element_font">
+                            Никнейм
+                        </div>
+                        <div class="main__element main__value-element_font">
+                            vileven
+                        </div>
+                    </div>
+                </div>
+                <div class="main__row">
+                    <div class="main__block">
+                        <div class="main__element main__header-element_font">
+                            Дата рождения
+                        </div>
+                        <div class="main__element main__value-element_font">
+                            15.06.1997
+                        </div>
+                    </div>
+                </div>
+                <div class="main__row">
+                    <div class="main__block">
+                        <div class="main__element main__header-element_font">
+                            Пол
+                        </div>
+                        <div class="main__element main__value-element_font">
+                            Мужской
+                        </div>
+                    </div>
+                </div>
+                <div class="main__row">
+                    <div class="main__block">
+                        <div class="main__element main__header-element_font">
+                            Email
+                        </div>
+                        <div class="main__element main__value-element_font">
+                            lol@kek
+                        </div>
+                    </div>
+                    <div class="main__block">
+                        <div class="main__element main__header-element_font">
+                            Телефон
+                        </div>
+                        <div class="main__element main__value-element_font">
+                            +7 (965) 432-**-**
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="footer footer__border">
+                <button class="button footer__button button__row footer__button_edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M7.627 13.203l4.237-4.237 2.17 2.17-3.152 3.152-1.085 1.085c-.001.001-.243.225-.712.314l-1.621.306a.438.438 0 0 1-.36-.097.438.438 0 0 1-.097-.36l.306-1.621c.089-.468.312-.71.314-.712zM5.557 14H2.013a1 1 0 0 1-1-1v-.3c0-2.48 2.01-4.494 4.488-4.5v-.796a3 3 0 0 1-1.488-2.591V3a3.001 3.001 0 0 1 6 0v1.813a3 3 0 0 1-1.488 2.591V8.2a4.52 4.52 0 0 1 1.199.165 2477.73 2477.73 0 0 0-3.326 3.329c-.004.004-.509.552-.71 1.611L5.557 14zm8.994-6.812a.643.643 0 0 0-.909 0l-.856.856 2.17 2.17.856-.856a.643.643 0 0 0 0-.909l-1.261-1.261z"></path>
+                    </svg>
+                    <div class="footer__text">Изменить</div>
+                </button>
+                <button class="button footer__button button__row footer__button_delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M12.437 6a.463.463 0 0 1 .464.489l-.367 6.679c0 1.104-.914 1.84-2.018 1.84H5.548c-1.103 0-2.017-.686-2.017-1.79l-.436-6.724A.462.462 0 0 1 3.558 6h8.879zM2.128 5a.529.529 0 0 1-.531-.525l.001-.012c0-.414.251-.769.608-.922.455-.241 1.681-.439 3.292-.542V1.41C5.498.632 6.13 0 6.908 0h2.184c.778 0 1.41.632 1.41 1.41v1.589c1.611.103 2.837.301 3.292.542.357.153.608.508.608.922 0 .297-.24.537-.537.537H2.128zm6.571-3.407H7.301A.301.301 0 0 0 7 1.894v1.041a46.454 46.454 0 0 1 2 0V1.894a.301.301 0 0 0-.301-.301z"></path>
+                    </svg>
+                    <div class="footer__text">Удалить</div>
+                </button>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>
