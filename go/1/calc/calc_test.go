@@ -6,7 +6,7 @@ import (
 )
 
 type successfulTestPair struct{
-	number int // for comfortable counting tests and understanding of what test you thinking about now
+	number int // for comfortable counting tests and understanding of what test you are thinking about now
 	input string
 	result int
 	err string
