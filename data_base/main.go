@@ -1,18 +1,20 @@
 package main
 
 import (
-	"data_base/core/router"
-	"data_base/logger"
+	"data_base/presentation/core/router"
+	"data_base/presentation/logger"
+	"database/sql"
 	"net/http"
-	"os"
 )
 
 func main() {
-	PORT := os.Getenv("PORT")
-	if PORT == "" {
-		PORT = "5000"
+	connStr := "user=postgres password=mypass dbname=productdb sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil{
+		logger.Fatal.Printf("%s", err.Error())
 	}
-	logger.Info.Printf("Started listening at: %s", PORT)
+	defer db.Close()
 	r := router.GetRouter()
-	logger.Fatal.Println(http.ListenAndServe(":"+PORT, r))
+	logger.Info.Printf("\nStarted listening at: 8001")
+	logger.Fatal.Println(http.ListenAndServe(":5000", r))
 }
