@@ -1,20 +1,34 @@
 package main
 
 import (
+	"data_base/models"
 	"data_base/presentation/core/router"
 	"data_base/presentation/logger"
-	"database/sql"
 	"net/http"
 )
 
 func main() {
-	connStr := "user=postgres password=mypass dbname=productdb sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
-	if err != nil{
-		logger.Fatal.Printf("%s", err.Error())
-	}
-	defer db.Close()
+	//psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	//	models.Host, models.Port, models.User, models.Password, models.DBname)
+	//
+	//DB, err := sql.Open("postgres", psqlInfo)
+	//if err != nil {
+	//	logger.Fatal.Println(err.Error())
+	//	panic(err)
+	//}
+	//defer DB.Close()
+	//logger.Info.Printf("\nSuccessfully connected to database at: 5432")
+
+	models.OpenConnectionDB()
+	defer models.CloseConnectionDB()
+
 	r := router.GetRouter()
-	logger.Info.Printf("\nStarted listening at: 8001")
+	logger.Info.Printf("\nStarted listening at: 5000")
 	logger.Fatal.Println(http.ListenAndServe(":5000", r))
+
+
 }
+
+
+
+

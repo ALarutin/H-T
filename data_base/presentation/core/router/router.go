@@ -7,7 +7,7 @@ import (
 	"data_base/presentation/controllers/service"
 	"data_base/presentation/controllers/thread"
 	"data_base/presentation/controllers/user"
-	"data_base/presentation/middlewares"
+	"data_base/presentation/middleware"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -15,8 +15,6 @@ import (
 func GetRouter() (router *mux.Router) {
 
 	router = mux.NewRouter()
-
-	//router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){})
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//forum
@@ -188,14 +186,14 @@ func GetRouter() (router *mux.Router) {
 		{
 			Info:    "Handler for creating new user.",
 			Name:    "user_CreatNewUser",
-			Path:    "{nickname}/create",
+			Path:    "/{nickname}/create",
 			Method:  http.MethodPost,
 			Handler: user.CreatNewUserHandler,
 		},
 		{
 			Info:    "Handler for changing user data.",
 			Name:    "user_ChangUserData",
-			Path:    "{nickname}/profile",
+			Path:    "/{nickname}/profile",
 			Method:  http.MethodPost,
 			Handler: user.ChangUserDataHandler,
 		},
@@ -216,7 +214,7 @@ func GetRouter() (router *mux.Router) {
 			HandlerFunc(r.Handler)
 	}
 
-	router.Use(middlewares.MiddlewareLogger)
-	router.Use(middlewares.MiddlewarePanic)
+	router.Use(middleware.MiddlewareLogger)
+	router.Use(middleware.MiddlewarePanic)
 	return
 }

@@ -1,21 +1,10 @@
-FATAL: 2019/03/22 14:51:33 main.go:14: sql: unknown driver "postgres" (forgotten import?)
-INFO: 2019/03/22 14:51:33 main.go:18: 
-Started listening at: 8001
-INFO: 2019/03/22 14:54:35 get_data_base_info.go:16: Get into handler
-name:    service_GetDataBaseInfo
-info:    Handler for obtaining information about the database.
-metod:   GET
-INFO: 2019/03/22 14:54:35 middlewares.go:13: 
-method: [GET]
-addr: 127.0.0.1:52340
-path: /service/status
-start time: 77.473µs
-INFO: 2019/03/22 14:55:00 creat_forum.go:16: Get into handler
-name:    forum_CreatForum
-info:    Handler for creating forum.
-metod:   POST
-INFO: 2019/03/22 14:55:00 middlewares.go:13: 
+INFO: 2019/03/26 15:25:34 db.go:36: 
+Successfully connected to database at: 5432
+INFO: 2019/03/26 15:25:34 main.go:26: 
+Started listening at: 5000
+ERROR: 2019/03/26 15:25:39 creat_new_user.go:24: pq: password authentication failed for user "mac"
+INFO: 2019/03/26 15:25:39 middleware.go:13: 
 method: [POST]
-addr: 127.0.0.1:52340
-path: /forum/create
-start time: 66.101µs
+addr: 127.0.0.1:49783
+path: /user/BD/create
+start time: 4.86369ms
