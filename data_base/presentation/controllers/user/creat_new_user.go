@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	"net/url"
 )
 
 func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
+
+	var user models.Users
 
 	varMap := mux.Vars(r)
 	nickname, found := varMap["nickname"]
@@ -17,23 +18,19 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := models.Users{}
-
-	rows, err := models.DB.DatBase.Query(`SELECT * FROM homework_DB."user" WHERE nickname = $1`, nickname)
+	rows, err := models.DB.DatBase.Query(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	for rows.Next(){
+	if rows.Next(){
 		err = rows.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
 		if err != nil {
 			logger.Error.Println(err.Error())
 			return
 		}
-	}
 
-	if !user.IsEmpty(){
 		data, err := json.Marshal(user)
 		if err != nil {
 			logger.Error.Println(err.Error())
@@ -45,6 +42,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 			logger.Error.Println(err.Error())
 			return
 		}
+		return
 	}
 
 	err = r.ParseForm()
@@ -53,25 +51,20 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	about := r.PostFormValue("about")
-	email := r.PostFormValue("email")
-	fullname := r.PostFormValue("fullname")
+	user.About = r.PostFormValue("about")
+	user.Email = r.PostFormValue("email")
+	user.Fullname = r.PostFormValue("fullname")
+	user.Nickname = nickname
 
 	_, err = models.DB.DatBase.Exec(
-				`INSERT INTO homework_DB."user" (email, about, fullname, nickname) 
-				VALUES ($1, $2, $3, $4)`, email, about, fullname, nickname )
+				`INSERT INTO public."user" (email, about, fullname, nickname) 
+				VALUES ($1, $2, $3, $4)`, user.Email, user.About, user.Fullname, user.Nickname )
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	form := url.Values{}
-	form.Add("about", about)
-	form.Add("email", email)
-	form.Add("fullname", fullname)
-	form.Add("nickname", nickname)
-
-	data, err := json.Marshal(form)
+	data, err := json.Marshal(user)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
@@ -83,5 +76,4 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
-
 }

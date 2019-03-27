@@ -6,7 +6,15 @@ import (
 	"time"
 )
 
-func MiddlewareLogger(this http.Handler) http.Handler{
+func ContentType(this http.Handler) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json")
+		this.ServeHTTP(w, r)
+	})
+}
+
+
+func Logger(this http.Handler) http.Handler{
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		this.ServeHTTP(w, r)
@@ -15,7 +23,7 @@ func MiddlewareLogger(this http.Handler) http.Handler{
 	})
 }
 
-func MiddlewarePanic(this http.Handler) http.Handler{
+func Panic(this http.Handler) http.Handler{
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {

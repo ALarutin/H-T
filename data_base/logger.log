@@ -1,10 +1,9 @@
-INFO: 2019/03/26 15:25:34 db.go:36: 
+INFO: 2019/03/26 18:04:00 db.go:36: 
 Successfully connected to database at: 5432
-INFO: 2019/03/26 15:25:34 main.go:26: 
+INFO: 2019/03/26 18:04:00 main.go:26: 
 Started listening at: 5000
-ERROR: 2019/03/26 15:25:39 creat_new_user.go:24: pq: password authentication failed for user "mac"
-INFO: 2019/03/26 15:25:39 middleware.go:13: 
-method: [POST]
-addr: 127.0.0.1:49783
-path: /user/BD/create
-start time: 4.86369ms
+INFO: 2019/03/26 18:04:02 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:51377
+path: /user/boaaaol/profile
+start time: 7.37692ms

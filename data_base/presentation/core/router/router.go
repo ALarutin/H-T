@@ -213,8 +213,8 @@ func GetRouter() (router *mux.Router) {
 			Path(r.Path).
 			HandlerFunc(r.Handler)
 	}
-
-	router.Use(middleware.MiddlewareLogger)
-	router.Use(middleware.MiddlewarePanic)
+	router.Use(middleware.ContentType)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Panic)
 	return
 }
