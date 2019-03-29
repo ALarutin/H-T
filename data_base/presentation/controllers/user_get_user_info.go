@@ -1,4 +1,4 @@
-package user
+package controllers
 
 import (
 	"data_base/models"
@@ -18,20 +18,17 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := models.DB.DatBase.Query(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
+	row := models.DB.DatBase.QueryRow(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
+
+
+	err := row.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	if rows.Next(){
-		err = rows.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
-		if err != nil {
-			logger.Error.Println(err.Error())
-			return
-		}
-	} else{
-		MyJSON := `{"message":"`+ "some message here" + `"}`
+	if len(user.Nickname) == 0 {
+		MyJSON := `{"message":"` + "cant find user with nickname " + nickname + `"}`
 
 		w.WriteHeader(http.StatusNotFound)
 		_, err = w.Write([]byte(MyJSON))

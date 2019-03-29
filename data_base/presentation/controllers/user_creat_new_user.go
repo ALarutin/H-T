@@ -1,4 +1,4 @@
-package user
+package controllers
 
 import (
 	"data_base/models"
@@ -18,24 +18,39 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := models.DB.DatBase.Query(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
+	err := r.ParseForm()
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	if rows.Next(){
+	rows, err := models.DB.DatBase.Query(`SELECT * FROM public."user" WHERE nickname = $1 OR email = $2`, nickname, r.PostFormValue("email"))
+	if err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+
+	users := make([]models.Users, 0)
+	var i int
+
+	for rows.Next() {
+		i++
 		err = rows.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
 		if err != nil {
 			logger.Error.Println(err.Error())
 			return
 		}
+		users = append(users, user)
+	}
 
-		data, err := json.Marshal(user)
+	if i != 0 {
+
+		data, err := json.Marshal(users)
 		if err != nil {
 			logger.Error.Println(err.Error())
 			return
 		}
+
 		w.WriteHeader(http.StatusConflict)
 		_, err = w.Write(data)
 		if err != nil {
@@ -45,20 +60,14 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = r.ParseForm()
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-
 	user.About = r.PostFormValue("about")
 	user.Email = r.PostFormValue("email")
 	user.Fullname = r.PostFormValue("fullname")
 	user.Nickname = nickname
 
 	_, err = models.DB.DatBase.Exec(
-				`INSERT INTO public."user" (email, about, fullname, nickname) 
-				VALUES ($1, $2, $3, $4)`, user.Email, user.About, user.Fullname, user.Nickname )
+		`INSERT INTO public."user" (email, about, fullname, nickname) 
+				VALUES ($1, $2, $3, $4)`, user.Email, user.About, user.Fullname, user.Nickname)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return

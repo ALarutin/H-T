@@ -1,4 +1,4 @@
-package forum
+package controllers
 
 import (
 	"net/http"

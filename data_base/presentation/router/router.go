@@ -2,11 +2,7 @@ package router
 
 import (
 	"data_base/models"
-	"data_base/presentation/controllers/forum"
-	"data_base/presentation/controllers/post"
-	"data_base/presentation/controllers/service"
-	"data_base/presentation/controllers/thread"
-	"data_base/presentation/controllers/user"
+	"data_base/presentation/controllers"
 	"data_base/presentation/middleware"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -27,35 +23,35 @@ func GetRouter() (router *mux.Router) {
 			Name:    "forum_CreatForum",
 			Path:    "/create",
 			Method:  http.MethodPost,
-			Handler: forum.CreatForumHandler,
+			Handler: controllers.CreatForumHandler,
 		},
 		{
 			Info:    "Handler for creating branch.",
 			Name:    "forum_CreatBranch",
 			Path:    "/{slug}/create",
 			Method:  http.MethodPost,
-			Handler: forum.CreatBranchHandler,
+			Handler: controllers.CreatBranchHandler,
 		},
 		{
 			Info:    "Handler for obtaining information about the forum.",
 			Name:    "forum_GetForumInfo",
 			Path:    "/{slug}/details",
 			Method:  http.MethodGet,
-			Handler: forum.GetForumInfoHandler,
+			Handler: controllers.GetForumInfoHandler,
 		},
 		{
 			Info:    "Handler for getting a list of forum discussion branches.",
 			Name:    "forum_GetThreads",
 			Path:    "/{slug}/threads",
 			Method:  http.MethodGet,
-			Handler: forum.GetThreadsHandler,
+			Handler: controllers.GetThreadsHandler,
 		},
 		{
 			Info:    "Handler for obtaining the users of this forum.",
 			Name:    "forum_GetUsers",
 			Path:    "/{slug}/users",
 			Method:  http.MethodGet,
-			Handler: forum.GetUsersHandler,
+			Handler: controllers.GetUsersHandler,
 		},
 	}
 
@@ -77,14 +73,14 @@ func GetRouter() (router *mux.Router) {
 			Name:    "post_ChangeMessage",
 			Path:    "/{id}/details",
 			Method:  http.MethodPost,
-			Handler: post.ChangeMessageHandler,
+			Handler: controllers.ChangeMessageHandler,
 		},
 		{
 			Info:    "Handler for getting information about the discussion thread.",
-			Name:    "post_GetThreadInfo",
+			Name:    "post_GetThreadInfoPost",
 			Path:    "/{id}/details",
 			Method:  http.MethodGet,
-			Handler: post.GetThreadInfoHandler,
+			Handler: controllers.GetThreadInfoPostHandler,
 		},
 	}
 
@@ -107,14 +103,14 @@ func GetRouter() (router *mux.Router) {
 			Name:    "service_ClearDataBase",
 			Path:    "/clear",
 			Method:  http.MethodPost,
-			Handler: service.ClearDataBaseHandler,
+			Handler: controllers.ClearDataBaseHandler,
 		},
 		{
 			Info:    "Handler for obtaining information about the database.",
 			Name:    "service_GetDataBaseInfo",
 			Path:    "/status",
 			Method:  http.MethodGet,
-			Handler: service.GetDataBaseInfoHandler,
+			Handler: controllers.GetDataBaseInfoHandler,
 		},
 	}
 
@@ -137,35 +133,35 @@ func GetRouter() (router *mux.Router) {
 			Name:    "thread_CreatNewPost",
 			Path:    "/{slug_or_id}/create",
 			Method:  http.MethodPost,
-			Handler: thread.CreatNewPostHandler,
+			Handler: controllers.CreatNewPostHandler,
 		},
 		{
 			Info:    "Handler for updating the branch.",
 			Name:    "thread_UpdateBranch",
 			Path:    "/{slug_or_id}/details",
 			Method:  http.MethodPost,
-			Handler: thread.UpdateBranchHandler,
+			Handler: controllers.UpdateBranchHandler,
 		},
 		{
 			Info:    "Handler for voting the discussion thread.",
 			Name:    "thread_VoteThread",
 			Path:    "/{slug_or_id}/vote",
 			Method:  http.MethodPost,
-			Handler: thread.VoteThreadHandler,
+			Handler: controllers.VoteThreadHandler,
 		},
 		{
 			Info:    "Handler for getting information about the discussion thread.",
-			Name:    "thread_GetThreadInfo",
+			Name:    "thread_GetThreadInfoThread",
 			Path:    "/{slug_or_id}/details",
 			Method:  http.MethodGet,
-			Handler: thread.GetThreadInfoHandler,
+			Handler: controllers.GetThreadInfoThreadHandler,
 		},
 		{
 			Info:    "Handler for getting messages of this branch of the discussion.",
 			Name:    "thread_GetBranchMessages",
 			Path:    "/{slug_or_id}/posts",
 			Method:  http.MethodGet,
-			Handler: thread.GetBranchMessagesHandler,
+			Handler: controllers.GetBranchMessagesHandler,
 		},
 	}
 
@@ -188,21 +184,21 @@ func GetRouter() (router *mux.Router) {
 			Name:    "user_CreatNewUser",
 			Path:    "/{nickname}/create",
 			Method:  http.MethodPost,
-			Handler: user.CreatNewUserHandler,
+			Handler: controllers.CreatNewUserHandler,
 		},
 		{
 			Info:    "Handler for changing user data.",
 			Name:    "user_ChangUserData",
 			Path:    "/{nickname}/profile",
 			Method:  http.MethodPost,
-			Handler: user.ChangUserDataHandler,
+			Handler: controllers.ChangUserDataHandler,
 		},
 		{
 			Info:    "Handler for getting information about user.",
 			Name:    "user_GetUserInfo",
 			Path:    "/{nickname}/profile",
 			Method:  http.MethodGet,
-			Handler: user.GetUserInfoHandler,
+			Handler: controllers.GetUserInfoHandler,
 		},
 	}
 

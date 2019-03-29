@@ -15,7 +15,7 @@ const (
 	DBname   = "postgres"
 )
 
-type environment struct{
+type environment struct {
 	DatBase *sql.DB
 }
 
@@ -31,11 +31,17 @@ func OpenConnectionDB() {
 		panic(err)
 	}
 
+	err = db.Ping()
+	if err != nil {
+		logger.Fatal.Println(err.Error())
+		panic(err)
+	}
+
 	DB.DatBase = db
 
 	logger.Info.Printf("\nSuccessfully connected to database at: 5432")
 }
 
-func CloseConnectionDB(){
+func CloseConnectionDB() {
 	DB.DatBase.Close()
 }

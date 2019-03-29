@@ -18,11 +18,3 @@ type Users struct {
 	Fullname string
 	Nickname string
 }
-
-func (u *Users) IsEmpty() bool{
-	if len(u.Nickname) == 0{
-		return true
-	} else{
-		return false
-	}
-}

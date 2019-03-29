@@ -1,9 +1,4 @@
-INFO: 2019/03/26 18:04:00 db.go:36: 
+INFO: 2019/03/29 16:58:57 db.go:42: 
 Successfully connected to database at: 5432
-INFO: 2019/03/26 18:04:00 main.go:26: 
+INFO: 2019/03/29 16:58:57 main.go:15: 
 Started listening at: 5000
-INFO: 2019/03/26 18:04:02 middleware.go:21: 
-method: [GET]
-addr: 127.0.0.1:51377
-path: /user/boaaaol/profile
-start time: 7.37692ms

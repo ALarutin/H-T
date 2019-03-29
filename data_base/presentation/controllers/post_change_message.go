@@ -1,4 +1,4 @@
-package post
+package controllers
 
 import (
 	"net/http"
