@@ -1,20 +1,16 @@
 package models
 
-import (
-	"net/http"
-)
-
-type Route struct {
-	Info    string
-	Name    string
-	Path    string
-	Method  string
-	Handler http.HandlerFunc
-}
-
 type Users struct {
 	About    string
 	Email    string
 	Fullname string
 	Nickname string
+}
+
+type Forum struct {
+	Posts   int64
+	Threads int64
+	Title   string
+	User    string
+	Slug    string
 }

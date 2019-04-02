@@ -15,17 +15,21 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 	varMap := mux.Vars(r)
 	nickname, found := varMap["nickname"]
 	if !found {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println("not found")
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
 
 	rows, err := models.DB.DatBase.Query(`SELECT * FROM public."user" WHERE nickname = $1 OR email = $2`, nickname, r.PostFormValue("email"))
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
@@ -37,6 +41,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		i++
 		err = rows.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			logger.Error.Println(err.Error())
 			return
 		}
@@ -44,9 +49,9 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if i != 0 {
-
 		data, err := json.Marshal(users)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			logger.Error.Println(err.Error())
 			return
 		}
@@ -54,6 +59,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 		_, err = w.Write(data)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			logger.Error.Println(err.Error())
 			return
 		}
@@ -69,12 +75,14 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		`INSERT INTO public."user" (email, about, fullname, nickname) 
 				VALUES ($1, $2, $3, $4)`, user.Email, user.About, user.Fullname, user.Nickname)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
 
 	data, err := json.Marshal(user)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
@@ -82,6 +90,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(data)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}

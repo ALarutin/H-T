@@ -1,12 +1,23 @@
 package controllers
 
-import "database/sql"
-
-const (
-	//ErrorDuplicateKey = `pq: duplicate key value violates unique constraint "user_pkey"`
-	//ErrorCantFind     = `Can't find user with id`
+import (
+	"database/sql"
+	"net/http"
 )
 
-type Handler struct{
+const (
+	ErrorSqlNoRows = `sql: no rows in result set`
+	ErrorCantFindUser    = `{"message": "cant find user with nickname `
+)
+
+type Handler struct {
 	DB *sql.DB
+}
+
+type Route struct {
+	Info    string
+	Name    string
+	Path    string
+	Method  string
+	Handler http.HandlerFunc
 }

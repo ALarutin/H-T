@@ -1,7 +1,6 @@
 package router
 
 import (
-	"data_base/models"
 	"data_base/presentation/controllers"
 	"data_base/presentation/middleware"
 	"github.com/gorilla/mux"
@@ -17,7 +16,7 @@ func GetRouter() (router *mux.Router) {
 
 	forumSubRouter := router.PathPrefix("/forum").Subrouter()
 
-	_forum := []models.Route{
+	_forum := []controllers.Route{
 		{
 			Info:    "Handler for creating forum.",
 			Name:    "forum_CreatForum",
@@ -67,7 +66,7 @@ func GetRouter() (router *mux.Router) {
 
 	postSubRouter := router.PathPrefix("/post").Subrouter()
 
-	_post := []models.Route{
+	_post := []controllers.Route{
 		{
 			Info:    "Handler for changing the message.",
 			Name:    "post_ChangeMessage",
@@ -97,7 +96,7 @@ func GetRouter() (router *mux.Router) {
 
 	serviceSubRouter := router.PathPrefix("/service").Subrouter()
 
-	_service := []models.Route{
+	_service := []controllers.Route{
 		{
 			Info:    "Handler for clearing all data in the database.",
 			Name:    "service_ClearDataBase",
@@ -127,7 +126,7 @@ func GetRouter() (router *mux.Router) {
 
 	threadSubRouter := router.PathPrefix("/thread").Subrouter()
 
-	_thread := []models.Route{
+	_thread := []controllers.Route{
 		{
 			Info:    "Handler for creating new post.",
 			Name:    "thread_CreatNewPost",
@@ -178,7 +177,7 @@ func GetRouter() (router *mux.Router) {
 
 	userSubRouter := router.PathPrefix("/user").Subrouter()
 
-	_user := []models.Route{
+	_user := []controllers.Route{
 		{
 			Info:    "Handler for creating new user.",
 			Name:    "user_CreatNewUser",
