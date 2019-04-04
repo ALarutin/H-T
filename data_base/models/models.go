@@ -14,3 +14,14 @@ type Forum struct {
 	User    string
 	Slug    string
 }
+
+type Branch struct {
+	Author  string
+	Created string
+	Forum   string
+	ID      int64
+	Message string
+	Slug    string
+	Title   string
+	Votes   int64
+}

@@ -1,0 +1,38 @@
+create table tread
+(
+  author  varchar(100) not null,
+  forum   varchar(100) not null,
+  message text         not null,
+  slug    varchar(100) not null,
+  created timestamp    not null,
+  id      serial       not null,
+  title   varchar(100),
+  votes   int          not null
+);
+
+create unique index tread_id_uindex
+  on tread (id);
+
+alter table tread
+  add constraint tread_pk
+    primary key (id);
+
+
+CREATE OR REPLACE FUNCTION update_threads_quantity()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  UPDATE public."forum"
+  SET threads = threads + 1
+  WHERE "slug" = NEW."forum";
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE TRIGGER update_forum_threads
+  AFTER INSERT
+  on thread
+  FOR EACH ROW
+EXECUTE PROCEDURE update_threads_quantity()

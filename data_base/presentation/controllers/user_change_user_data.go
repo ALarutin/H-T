@@ -35,7 +35,6 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
-
 	if len(user.Nickname) == 0 {
 		myJSON := ErrorCantFindUser + nickname + `"}`
 
@@ -56,7 +55,6 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
-
 	if user.Nickname != nickname {
 		myJSON := `{"message": "this email "` + user.Email + `" is already taken by another user"}`
 

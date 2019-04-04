@@ -8,6 +8,7 @@ import (
 const (
 	ErrorSqlNoRows = `sql: no rows in result set`
 	ErrorCantFindUser    = `{"message": "cant find user with nickname `
+	ErrorCantFindSlug = `{"message": "cant find forum with slug `
 )
 
 type Handler struct {

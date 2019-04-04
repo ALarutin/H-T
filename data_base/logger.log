@@ -1,4 +1,10 @@
-INFO: 2019/04/02 13:30:02 db.go:42: 
+INFO: 2019/04/02 21:36:41 db.go:42: 
 Successfully connected to database at: 5432
-INFO: 2019/04/02 13:30:02 main.go:15: 
+INFO: 2019/04/02 21:36:41 main.go:15: 
 Started listening at: 5000
+INFO: 2019/04/02 21:36:49 forum_creat_branch.go:84: titlel
+INFO: 2019/04/02 21:36:49 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:58209
+path: /forum/pirate-stories/create
+start time: 11.318371ms
