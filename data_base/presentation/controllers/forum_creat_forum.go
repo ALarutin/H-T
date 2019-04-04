@@ -21,9 +21,9 @@ func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
 
 	nickname := r.PostFormValue("user")
 
-	row := models.DB.DatBase.QueryRow(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
+	row := models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1`, nickname)
 
-	err = row.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
+	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -46,9 +46,9 @@ func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
 	slug := r.PostFormValue("slug")
 	username := r.PostFormValue("user")
 
-	row = models.DB.DatBase.QueryRow(`SELECT * FROM public."forum" WHERE slug = $1 AND username = $2`, slug, username)
+	row = models.DB.DatBase.QueryRow(`SELECT * FROM public."forum" WHERE slug = $1 AND author = $2`, slug, username)
 
-	err = row.Scan(&forum.Posts, &forum.Slug, &forum.Threads, &forum.Title, &forum.User)
+	err = row.Scan(&forum.Slug, &forum.Author, &forum.Title, &forum.Posts, &forum.Threads)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -75,11 +75,11 @@ func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
 
 	forum.Slug = r.PostFormValue("slug")
 	forum.Title = r.PostFormValue("title")
-	forum.User = r.PostFormValue("user")
+	forum.Author = r.PostFormValue("user")
 
 	_, err = models.DB.DatBase.Exec(
-		`INSERT INTO public."forum" (slug, title, username, posts, threads) 
-				VALUES ($1, $2, $3, $4, $5)`, forum.Slug, forum.Title, forum.User, forum.Posts, forum.Threads)
+		`INSERT INTO public."forum" (slug, title, author, posts, threads) 
+				VALUES ($1, $2, $3, $4, $5)`, forum.Slug, forum.Title, forum.Author, forum.Posts, forum.Threads)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())

@@ -20,10 +20,10 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := models.DB.DatBase.QueryRow(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
+	row := models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1`, nickname)
 
 
-	err := row.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
+	err := row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())

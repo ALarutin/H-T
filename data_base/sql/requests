@@ -1,21 +1,63 @@
-create table tread
+CREATE TABLE person
 (
-  author  varchar(100) not null,
-  forum   varchar(100) not null,
-  message text         not null,
-  slug    varchar(100) not null,
-  created timestamp    not null,
-  id      serial       not null,
-  title   varchar(100),
-  votes   int          not null
+  id       serial       not null,
+  nickname varchar(100) not null,
+  email    varchar(100) not null,
+  fullname varchar(100) not null,
+  about    text         not null
 );
 
-create unique index tread_id_uindex
-  on tread (id);
+CREATE UNIQUE INDEX person_id_uindex
+  ON public.person (id);
 
-alter table tread
-  add constraint tread_pk
-    primary key (id);
+ALTER TABLE public.person
+  ADD CONSTRAINT person_pk
+    PRIMARY KEY (nickname);
+
+
+
+CREATE TABLE forum
+(
+  slug    varchar(100) not null,
+  "user"  varchar(100) not null,
+  title   varchar(100) not null,
+  posts   int          not null,
+  threads int          not null
+);
+
+ALTER TABLE public.forum
+  ADD CONSTRAINT forum_pk
+    PRIMARY KEY (slug);
+
+
+CREATE TABLE thread
+(
+  id      serial       not null,
+  slug    varchar(100) not null,
+  author  varchar(100) not null,
+  forum   varchar(100) not null,
+  title   varchar(100),
+  message text         not null,
+  votes   int          not null,
+  created timestamp    not null
+);
+
+CREATE UNIQUE INDEX tread_id_uindex
+  ON public.thread (id);
+
+ALTER TABLE public.thread
+  ADD CONSTRAINT thread_pk
+    PRIMARY KEY (slug);
+
+
+CREATE TABLE forum_users
+(
+  forum_slug varchar(100) not null,
+  user_slug  varchar(100) not null
+);
+
+ALTER TABLE public.forum_users
+  ADD CONSTRAINT forum_users_pk PRIMARY KEY (forum_slug, user_slug);
 
 
 CREATE OR REPLACE FUNCTION update_threads_quantity()
@@ -35,4 +77,40 @@ CREATE TRIGGER update_forum_threads
   AFTER INSERT
   on thread
   FOR EACH ROW
-EXECUTE PROCEDURE update_threads_quantity()
+EXECUTE PROCEDURE update_threads_quantity();
+
+
+CREATE OR REPLACE FUNCTION update_forum_users_on_thread()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  INSERT INTO public."forum_users"(forum_slug, user_slug)
+  VALUES (NEW."forum", NEW."author");
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER update_forum_users_on_thread
+  AFTER INSERT
+  on thread
+  FOR EACH ROW
+EXECUTE PROCEDURE update_forum_users();
+
+
+CREATE OR REPLACE FUNCTION update_forum_users_on_forum()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  INSERT INTO public."forum_users"(forum_slug, user_slug)
+  VALUES (NEW."slug", NEW."author");
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER update_forum_users_on_forum
+  AFTER INSERT
+  on forum
+  FOR EACH ROW
+EXECUTE PROCEDURE update_forum_users_on_forum();

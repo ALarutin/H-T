@@ -27,7 +27,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := models.DB.DatBase.Query(`SELECT * FROM public."user" WHERE nickname = $1 OR email = $2`, nickname, r.PostFormValue("email"))
+	rows, err := models.DB.DatBase.Query(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1 OR email = $2`, nickname, r.PostFormValue("email"))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -39,7 +39,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		i++
-		err = rows.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
+		err = rows.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			logger.Error.Println(err.Error())
@@ -72,7 +72,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 	user.Nickname = nickname
 
 	_, err = models.DB.DatBase.Exec(
-		`INSERT INTO public."user" (email, about, fullname, nickname) 
+		`INSERT INTO public."person" (email, about, fullname, nickname) 
 				VALUES ($1, $2, $3, $4)`, user.Email, user.About, user.Fullname, user.Nickname)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

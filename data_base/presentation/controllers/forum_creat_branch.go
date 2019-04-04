@@ -28,9 +28,9 @@ func CreatBranchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := models.DB.DatBase.QueryRow(`SELECT * FROM public."forum" WHERE slug = $1`, slugUrl)
+	row := models.DB.DatBase.QueryRow(`SELECT slug FROM public."forum" WHERE slug = $1`, slugUrl)
 
-	err = row.Scan(&forum.Posts, &forum.Slug, &forum.Threads, &forum.Title, &forum.User)
+	err = row.Scan(&forum.Slug)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -54,9 +54,9 @@ func CreatBranchHandler(w http.ResponseWriter, r *http.Request) {
 
 	nickname := r.PostFormValue("author")
 
-	row = models.DB.DatBase.QueryRow(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
+	row = models.DB.DatBase.QueryRow(`SELECT nickname FROM public."person" WHERE nickname = $1`, nickname)
 
-	err = row.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
+	err = row.Scan(&user.Nickname)
 	if err != nil && err.Error() != ErrorSqlNoRows{
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -81,11 +81,10 @@ func CreatBranchHandler(w http.ResponseWriter, r *http.Request) {
 		title := r.PostFormValue("title")
 		slugBody = strings.Replace(strings.ToLower(title), " ", "_", -1)
 	}
-	logger.Info.Print(slugBody)
 
 	row = models.DB.DatBase.QueryRow(`SELECT * FROM public."thread" WHERE slug = $1`, slugBody)
 
-	err = row.Scan(&thread.Author, &thread.Created, &thread.Forum, &thread.ID, &thread.Message, &thread.Slug, &thread.Title, &thread.Votes)
+	err = row.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes, &thread.Created)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -123,10 +122,9 @@ func CreatBranchHandler(w http.ResponseWriter, r *http.Request) {
 	err = models.DB.DatBase.QueryRow(
 		`INSERT INTO public."thread" (author, created, forum, message, slug, title, votes) 
 				VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-				thread.Author, thread.Created, thread.Forum, thread.Message, thread.Slug, thread.Title, thread.Votes).
-		Scan(&thread.ID)
+				thread.Author, thread.Created, thread.Forum, thread.Message, thread.Slug, thread.Title, thread.Votes).Scan(&thread.ID)
 
-	if err != nil {
+	if err != nil && err.Error() != ErrorHaveDuplicates {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

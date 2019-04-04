@@ -11,7 +11,7 @@ type Forum struct {
 	Posts   int64
 	Threads int64
 	Title   string
-	User    string
+	Author  string
 	Slug    string
 }
 

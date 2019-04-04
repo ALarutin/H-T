@@ -22,7 +22,7 @@ func GetForumInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	row := models.DB.DatBase.QueryRow(`SELECT * FROM public."forum" WHERE slug = $1`, slug)
 
-	err := row.Scan(&forum.Posts, &forum.Slug, &forum.Threads, &forum.Title, &forum.User)
+	err := row.Scan(&forum.Slug, &forum.Author, &forum.Title, &forum.Posts, &forum.Threads)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())

@@ -27,9 +27,9 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := models.DB.DatBase.QueryRow(`SELECT * FROM public."user" WHERE nickname = $1`, nickname)
+	row := models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1`, nickname)
 
-	err = row.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
+	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -47,9 +47,9 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row = models.DB.DatBase.QueryRow(`SELECT * FROM public."user" WHERE email = $1`, r.PostFormValue("email"))
+	row = models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE email = $1`, r.PostFormValue("email"))
 
-	err = row.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
+	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
 	if err != nil && err.Error() != ErrorSqlNoRows{
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
@@ -74,7 +74,7 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	user.Nickname = nickname
 
 	_, err = models.DB.DatBase.Exec(
-		`UPDATE public."user" 
+		`UPDATE public."person" 
 				SET email = $1, fullname = $2, about = $3  
 				WHERE nickname = $4`, user.Email, user.Fullname, user.About, user.Nickname)
 	if err != nil {
