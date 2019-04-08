@@ -34,10 +34,11 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	user.Nickname = nickname
 
 	var id int
-	err = models.DB.DatBase.QueryRow(
-		`UPDATE public."person" 
+	err = models.DB.DatBase.QueryRow(`UPDATE public."person" 
 				SET email = $1, fullname = $2, about = $3  
-				WHERE nickname = $4 RETURNING id`, user.Email, user.Fullname, user.About, user.Nickname).Scan(&id)
+				WHERE nickname = $4 RETURNING id`,
+				user.Email, user.Fullname, user.About, user.Nickname).
+		Scan(&id)
 	if err, ok := err.(*pq.Error); ok && err.Code.Class() != ErrorUniqueViolation {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
