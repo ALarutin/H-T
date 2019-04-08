@@ -4,13 +4,11 @@ import (
 	"data_base/models"
 	"data_base/presentation/logger"
 	"encoding/json"
+	"github.com/lib/pq"
 	"net/http"
 )
 
 func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
-
-	var forum models.Forum
-	var user models.Users
 
 	err := r.ParseForm()
 	if err != nil {
@@ -21,68 +19,57 @@ func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
 
 	nickname := r.PostFormValue("user")
 
-	row := models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1`, nickname)
+	var forum models.Forum
 
-	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
-	if err != nil && err.Error() != ErrorSqlNoRows {
+	forum.Slug = r.PostFormValue("slug")
+	forum.Title = r.PostFormValue("title")
+	forum.User = r.PostFormValue("user")
+
+	_, err = models.DB.DatBase.Exec(
+		`INSERT INTO public."forum" (author, slug, title,  posts, threads) 
+				VALUES ($1, $2, $3, $4, $5)`,forum.User, forum.Slug, forum.Title, forum.Posts, forum.Threads)
+	if err, ok := err.(*pq.Error); ok && err.Code.Class() != ErrorUniqueViolation {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
+		logger.Error.Println(err.Code.Class())
 		return
-	}
-	if len(user.Nickname) == 0 {
+	} else if ok && err.Code.Class() == ErrorUniqueViolation && err.Constraint == ForumUserForeignKey {
 
 		myJSON := ErrorCantFindUser + nickname + `"}`
 
 		w.WriteHeader(http.StatusNotFound)
-		_, err = w.Write([]byte(myJSON))
-		if err != nil {
+		_, _err := w.Write([]byte(myJSON))
+		if _err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(err.Error())
+			logger.Error.Println(_err.Error())
 			return
 		}
 		return
-	}
+	} else if ok && err.Code.Class() == ErrorUniqueViolation && err.Constraint == ForumPrimaryKey {
 
-	slug := r.PostFormValue("slug")
-	username := r.PostFormValue("user")
+		row := models.DB.DatBase.QueryRow(`SELECT * FROM public."forum" WHERE slug = $1`, forum.Slug)
 
-	row = models.DB.DatBase.QueryRow(`SELECT * FROM public."forum" WHERE slug = $1 AND author = $2`, slug, username)
-
-	err = row.Scan(&forum.Slug, &forum.Author, &forum.Title, &forum.Posts, &forum.Threads)
-	if err != nil && err.Error() != ErrorSqlNoRows {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-	if forum.Slug == slug {
-
-		data, err := json.Marshal(forum)
-		if err != nil {
+		_err := row.Scan(&forum.Slug, &forum.User, &forum.Title, &forum.Posts, &forum.Threads)
+		if _err != nil && _err.Error() != ErrorSqlNoRows {
 			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(err.Error())
+			logger.Error.Println(_err.Error())
+			return
+		}
+
+		data, _err := json.Marshal(forum)
+		if _err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(_err.Error())
 			return
 		}
 
 		w.WriteHeader(http.StatusConflict)
-		_, err = w.Write(data)
-		if err != nil {
+		_, _err = w.Write(data)
+		if _err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(err.Error())
+			logger.Error.Println(_err.Error())
 			return
 		}
-		return
-	}
-
-	forum.Slug = r.PostFormValue("slug")
-	forum.Title = r.PostFormValue("title")
-	forum.Author = r.PostFormValue("user")
-
-	_, err = models.DB.DatBase.Exec(
-		`INSERT INTO public."forum" (slug, title, author, posts, threads) 
-				VALUES ($1, $2, $3, $4, $5)`, forum.Slug, forum.Title, forum.Author, forum.Posts, forum.Threads)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
 		return
 	}
 

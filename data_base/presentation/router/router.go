@@ -7,6 +7,14 @@ import (
 	"net/http"
 )
 
+type Route struct {
+	Info    string
+	Name    string
+	Path    string
+	Method  string
+	Handler http.HandlerFunc
+}
+
 func GetRouter() (router *mux.Router) {
 
 	router = mux.NewRouter()
@@ -16,7 +24,7 @@ func GetRouter() (router *mux.Router) {
 
 	forumSubRouter := router.PathPrefix("/forum").Subrouter()
 
-	_forum := []controllers.Route{
+	_forum := []Route{
 		{
 			Info:    "Handler for creating forum.",
 			Name:    "forum_CreatForum",
@@ -66,7 +74,7 @@ func GetRouter() (router *mux.Router) {
 
 	postSubRouter := router.PathPrefix("/post").Subrouter()
 
-	_post := []controllers.Route{
+	_post := []Route{
 		{
 			Info:    "Handler for changing the message.",
 			Name:    "post_ChangeMessage",
@@ -96,7 +104,7 @@ func GetRouter() (router *mux.Router) {
 
 	serviceSubRouter := router.PathPrefix("/service").Subrouter()
 
-	_service := []controllers.Route{
+	_service := []Route{
 		{
 			Info:    "Handler for clearing all data in the database.",
 			Name:    "service_ClearDataBase",
@@ -126,7 +134,7 @@ func GetRouter() (router *mux.Router) {
 
 	threadSubRouter := router.PathPrefix("/thread").Subrouter()
 
-	_thread := []controllers.Route{
+	_thread := []Route{
 		{
 			Info:    "Handler for creating new post.",
 			Name:    "thread_CreatNewPost",
@@ -177,7 +185,7 @@ func GetRouter() (router *mux.Router) {
 
 	userSubRouter := router.PathPrefix("/user").Subrouter()
 
-	_user := []controllers.Route{
+	_user := []Route{
 		{
 			Info:    "Handler for creating new user.",
 			Name:    "user_CreatNewUser",

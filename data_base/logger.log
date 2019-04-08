@@ -1,9 +1,10 @@
-INFO: 2019/04/05 01:35:10 db.go:42: 
+INFO: 2019/04/08 20:27:49 db.go:42: 
 Successfully connected to database at: 5432
-INFO: 2019/04/05 01:35:10 main.go:15: 
+INFO: 2019/04/08 20:27:49 main.go:15: 
 Started listening at: 5000
-INFO: 2019/04/05 01:35:15 middleware.go:21: 
-method: [GET]
-addr: 127.0.0.1:53520
-path: /forum/pooo/users
-start time: 4.269057ms
+ERROR: 2019/04/08 20:27:52 forum_creat_branch.go:125: pq: null value in column "author" violates not-null constraint
+INFO: 2019/04/08 20:27:52 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:53709
+path: /forum/mama/create
+start time: 3.87079ms

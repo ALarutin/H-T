@@ -53,8 +53,9 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tempSelect:= fmt.Sprintf(`SELECT * FROM public."person" WHERE nickname in 
-					(SELECT user_slug FROM public."forum_users" WHERE forum_slug = '%s')`, slug)
-
+					(SELECT user_nickname  
+					FROM (SELECT * FROM public."forum_users" GROUP BY forum_slug, user_nickname) as m
+					WHERE forum_slug = '%s')`, slug)
 	rows, err := models.DB.DatBase.Query(
 		fmt.Sprintf(`SELECT nickname, email, fullname, about FROM (%s) as p WHERE id >= '%s' ORDER BY id`,
 			tempSelect, since) +

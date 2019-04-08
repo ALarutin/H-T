@@ -21,15 +21,12 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	row := models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1`, nickname)
-
-
 	err := row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
 	if err != nil && err.Error() != ErrorSqlNoRows {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
-
 	if len(user.Nickname) == 0 {
 		myJSON := ErrorCantFindUser + nickname + `"}`
 

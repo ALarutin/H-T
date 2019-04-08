@@ -5,6 +5,7 @@ import (
 	"data_base/presentation/logger"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/lib/pq"
 	"net/http"
 )
 
@@ -27,59 +28,41 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1`, nickname)
-
-	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
-	if err != nil && err.Error() != ErrorSqlNoRows {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-	if len(user.Nickname) == 0 {
-		myJSON := ErrorCantFindUser + nickname + `"}`
-
-		w.WriteHeader(http.StatusNotFound)
-		_, err = w.Write([]byte(myJSON))
-		if err != nil {
-			logger.Error.Println(err.Error())
-			return
-		}
-		return
-	}
-
-	row = models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE email = $1`, r.PostFormValue("email"))
-
-	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
-	if err != nil && err.Error() != ErrorSqlNoRows{
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-	if user.Nickname != nickname {
-		myJSON := `{"message": "this email "` + user.Email + `" is already taken by another user"}`
-
-		w.WriteHeader(http.StatusConflict)
-		_, err = w.Write([]byte(myJSON))
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(err.Error())
-			return
-		}
-		return
-	}
-
 	user.About = r.PostFormValue("about")
 	user.Email = r.PostFormValue("email")
 	user.Fullname = r.PostFormValue("fullname")
 	user.Nickname = nickname
 
-	_, err = models.DB.DatBase.Exec(
+	var id int
+	err = models.DB.DatBase.QueryRow(
 		`UPDATE public."person" 
 				SET email = $1, fullname = $2, about = $3  
-				WHERE nickname = $4`, user.Email, user.Fullname, user.About, user.Nickname)
-	if err != nil {
+				WHERE nickname = $4 RETURNING id`, user.Email, user.Fullname, user.About, user.Nickname).Scan(&id)
+	if err, ok := err.(*pq.Error); ok && err.Code.Class() != ErrorUniqueViolation {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
+		logger.Error.Println(err.Code.Class())
+		return
+	} else if ok && err.Code.Class() == ErrorUniqueViolation {
+		myJSON := `{"message": "this email ` + user.Email + ` is already taken by another user"}`
+
+		w.WriteHeader(http.StatusConflict)
+		_, _err := w.Write([]byte(myJSON))
+		if _err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(_err.Error())
+			return
+		}
+		return
+	} else if id == 0 {
+		myJSON := ErrorCantFindUser + nickname + `"}`
+
+		w.WriteHeader(http.StatusNotFound)
+		_, _err := w.Write([]byte(myJSON))
+		if _err != nil {
+			logger.Error.Println(_err.Error())
+			return
+		}
 		return
 	}
 
