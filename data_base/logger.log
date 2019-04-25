@@ -1,39 +1,14 @@
-INFO: 2019/04/25 23:20:11 db.go:44: 
+INFO: 2019/04/25 23:36:10 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/25 23:20:11 main.go:14: 
+INFO: 2019/04/25 23:36:10 main.go:14: 
 Started listening at: 5000
-INFO: 2019/04/25 23:20:14 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:50135
-path: /forum/ma/create
-start time: 4.497796ms
-INFO: 2019/04/25 23:20:47 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:50135
-path: /forum/mama/create
-start time: 619.942µs
-INFO: 2019/04/25 23:21:11 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:50135
-path: /forum/mama/create
-start time: 1.307257ms
-INFO: 2019/04/25 23:21:18 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:50135
-path: /forum/mama/create
-start time: 9.831008ms
-INFO: 2019/04/25 23:23:14 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:50135
-path: /forum/mama/create
-start time: 979.286µs
-INFO: 2019/04/25 23:23:30 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:50135
-path: /forum/mama/create
-start time: 1.031929ms
-INFO: 2019/04/25 23:23:40 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:50135
-path: /forum/mama/create
-start time: 1.067987ms
+INFO: 2019/04/25 23:36:14 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:50253
+path: /forum/pirate-stories/details
+start time: 2.735094ms
+INFO: 2019/04/25 23:36:32 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:50253
+path: /forum/mama/details
+start time: 594.647µs
