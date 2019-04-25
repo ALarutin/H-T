@@ -8,14 +8,14 @@ type User struct {
 }
 
 type Forum struct {
-	Posts   int
-	Slug    string
-	Threads int
-	Title   string
-	User    string
+	Posts   int    `json:"posts"`
+	Slug    string `json:"slug"`
+	Threads int    `json:"threads"`
+	Title   string `json:"title"`
+	User    string `json:"user"`
 }
 
-type Branch struct {
+type Thread struct {
 	Author  string `json:"author"`
 	Created string `json:"created"`
 	Forum   string `json:"forum"`

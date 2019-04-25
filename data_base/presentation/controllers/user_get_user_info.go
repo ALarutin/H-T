@@ -24,8 +24,8 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := models.GetInstance().GetUser(nickname)
 	if err != nil {
 		//TODO добавить psg error
-		if err.Error() == ErrorSqlNoRows {
-			myJSON := fmt.Sprintf("{\"%s%s\"}", ErrorCantFindUser, nickname)
+		if err.Error() == errorSqlNoRows {
+			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindUser, nickname)
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(myJSON))
 			if err != nil {

@@ -30,15 +30,15 @@ func GetRouter() (router *mux.Router) {
 			Name:    "forum_CreatForum",
 			Path:    "/create",
 			Method:  http.MethodPost,
-			Handler: controllers.CreatForumHandler,
+			Handler: controllers.CreateForumHandler,
 		},
-		//{
-		//	Info:    "Handler for creating branch.",
-		//	Name:    "forum_CreatBranch",
-		//	Path:    "/{slug}/create",
-		//	Method:  http.MethodPost,
-		//	Handler: controllers.CreatBranchHandler,
-		//},
+		{
+			Info:    "Handler for creating branch.",
+			Name:    "forum_CreatBranch",
+			Path:    "/{slug}/create",
+			Method:  http.MethodPost,
+			Handler: controllers.CreateBranchHandler,
+		},
 		//{
 		//	Info:    "Handler for obtaining information about the forum.",
 		//	Name:    "forum_GetForumInfo",

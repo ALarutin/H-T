@@ -5,11 +5,21 @@ import (
 	"data_base/presentation/logger"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/lib/pq"
 	"net/http"
+	"strings"
 )
 
-func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
+func CreateBranchHandler(w http.ResponseWriter, r *http.Request) {
+
+	varMap := mux.Vars(r)
+	slugUrl, found := varMap["slug"]
+	if !found {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println("not found")
+		return
+	}
 
 	err := r.ParseForm()
 	if err != nil {
@@ -18,41 +28,52 @@ func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var forum models.Forum
+	nickname := r.PostFormValue("author")
 
-	forum.Slug = r.PostFormValue("slug")
-	forum.Title = r.PostFormValue("title")
-	forum.User = r.PostFormValue("user")
+	slugBody := r.PostFormValue("slug")
+	if len(slugBody) == 0 {
+		title := r.PostFormValue("title")
+		slugBody = strings.Replace(strings.ToLower(title), " ", "_", -1)
+	}
 
-	err = models.GetInstance().CreateForum(forum)
+	var thread models.Thread
+
+	thread.Author = nickname
+	thread.Created = r.PostFormValue("created")
+	thread.Forum = slugUrl
+	thread.Message = r.PostFormValue("message")
+	thread.Title = r.PostFormValue("title")
+	thread.Slug = slugBody
+
+	err = models.GetInstance().CreateThread(thread)
 	if pqErr, ok := err.(*pq.Error); ok {
 
-		if pqErr.Code.Class() == ErrorUniqueViolation {
+		if pqErr.Code.Class() == errorUniqueViolation{
 
-			if pqErr.Constraint == ForumUserForeignKey {
+			if pqErr.Constraint == threadAuthorForeignKey || pqErr.Constraint == threadForumForeignKey {
 
-				myJSON := fmt.Sprintf("{\"%s%s\"}", ErrorCantFindUser, forum.User)
+				myJSON := fmt.Sprintf(`{"%s%s%s or %s%s"}`, messageCantFind, cantFindUser, thread.Author, cantFindForum, thread.Forum)
 
 				w.WriteHeader(http.StatusNotFound)
-				_, err := w.Write([]byte(myJSON))
-				if err != nil {
+				_, _err := w.Write([]byte(myJSON))
+				if _err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
-					logger.Error.Println(err.Error())
+					logger.Error.Println(_err.Error())
 					return
 				}
 				return
 			}
 
-			if pqErr.Constraint == ForumPrimaryKey {
+			if pqErr.Constraint == threadPrimaryKey{
 
-				forum, err := models.GetInstance().SelectForum(forum.Slug)
+				thread, err := models.GetInstance().SelectThread(thread.Slug)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					logger.Error.Println(err.Error())
 					return
 				}
 
-				data, err := json.Marshal(forum)
+				data, err := json.Marshal(thread)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					logger.Error.Println(err.Error())
@@ -76,7 +97,7 @@ func CreatForumHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := json.Marshal(forum)
+	data, err := json.Marshal(thread)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
