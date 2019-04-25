@@ -1,5 +1,11 @@
 package models
 
+import (
+	"data_base/presentation/logger"
+	"errors"
+	"fmt"
+)
+
 func (db *dbManager) CreateForum(forum Forum) (err error) {
 
 	_, err = db.dataBase.Exec(
@@ -44,5 +50,38 @@ func (db *dbManager) GetForum(slug string) (forum Forum, err error) {
 			WHERE slug = $1`,
 			slug)
 	err = row.Scan(&forum.Slug, &forum.User, &forum.Title, &forum.Posts, &forum.Threads)
+	return
+}
+
+func (db *dbManager) GetThreads(slug string, since string, desc string, limit string) (threads []Thread, err error) {
+
+	rows, err := db.dataBase.Query(
+		fmt.Sprintf(
+			`SELECT * FROM public."thread" 
+			WHERE created >= '%s' AND forum = '%s' ORDER BY created `,
+			since, slug) +
+		fmt.Sprintf(`%s `,
+			desc) +
+		fmt.Sprintf(
+			`LIMIT %s`,
+			limit))
+	if err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+
+	if !rows.Next(){
+		err = errors.New(ErrorSqlNoRows)
+	}
+
+	var thread Thread
+	for rows.Next() {
+		err = rows.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes, &thread.Created)
+		if err != nil {
+			logger.Error.Println(err.Error())
+			return
+		}
+		threads = append(threads, thread)
+	}
 	return
 }

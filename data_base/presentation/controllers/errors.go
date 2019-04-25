@@ -1,5 +1,7 @@
 package controllers
 
+import "data_base/models"
+
 const (
 	messageCantFind          = `message": "cant find `
 	cantFindUser             = `user with nickname `
@@ -15,7 +17,7 @@ const (
 )
 
 const (
-	errorSqlNoRows         = `sql: no rows in result set`
+	errorSqlNoRows         = models.ErrorSqlNoRows
 	forumUserForeignKey    = `forum_user_fk`
 	threadForumForeignKey  = `thread_forum_fk`
 	threadAuthorForeignKey = `thread_author_fk`

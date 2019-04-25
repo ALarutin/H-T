@@ -1,14 +1,14 @@
-INFO: 2019/04/25 23:36:10 db.go:44: 
+INFO: 2019/04/26 00:01:48 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/25 23:36:10 main.go:14: 
+INFO: 2019/04/26 00:01:48 main.go:14: 
 Started listening at: 5000
-INFO: 2019/04/25 23:36:14 middleware.go:21: 
+INFO: 2019/04/26 00:01:53 middleware.go:21: 
 method: [GET]
-addr: 127.0.0.1:50253
-path: /forum/pirate-stories/details
-start time: 2.735094ms
-INFO: 2019/04/25 23:36:32 middleware.go:21: 
+addr: 127.0.0.1:50428
+path: /forum/pirate-stories/threads
+start time: 3.441427ms
+INFO: 2019/04/26 00:02:02 middleware.go:21: 
 method: [GET]
-addr: 127.0.0.1:50253
-path: /forum/mama/details
-start time: 594.647µs
+addr: 127.0.0.1:50428
+path: /forum/mama/threads
+start time: 701.306µs
