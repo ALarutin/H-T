@@ -5,43 +5,57 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/xlab/closer"
 )
 
 const (
 	Host     = "localhost"
 	Port     = 5432
-	User     = "postgres"
+	Subscriber     = "postgres"
 	Password = "1209qawsed"
-	DBname   = "postgres"
+	DBName   = "postgres"
 )
 
-type environment struct {
-	DatBase *sql.DB
+type dbManager struct {
+	dataBase *sql.DB
 }
 
-var DB environment
+var db *dbManager
 
-func OpenConnectionDB() {
+func init() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		Host, Port, User, Password, DBname)
+		Host, Port, Subscriber, Password, DBName)
 
-	db, err := sql.Open("postgres", psqlInfo)
+	dataBase, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		logger.Fatal.Println(err.Error())
 		panic(err)
 	}
 
-	err = db.Ping()
+	err = dataBase.Ping()
 	if err != nil {
 		logger.Fatal.Println(err.Error())
 		panic(err)
 	}
 
-	DB.DatBase = db
-
+	db = &dbManager{
+		dataBase: dataBase,
+	}
 	logger.Info.Printf("\nSuccessfully connected to database at: 5432")
+
+	closer.Bind(closeConnection)
 }
 
-func CloseConnectionDB() {
-	DB.DatBase.Close()
+func closeConnection() {
+	err := db.dataBase.Close()
+	if err != nil{
+		logger.Fatal.Println(err.Error())
+	}
 }
+
+func GetInstance() *dbManager{
+	return db
+}
+
+
+

@@ -4,13 +4,14 @@ import (
 	"data_base/models"
 	"data_base/presentation/logger"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
-	var user models.Users
+	var user models.User
 
 	varMap := mux.Vars(r)
 	nickname, found := varMap["nickname"]
@@ -20,23 +21,20 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := models.DB.DatBase.QueryRow(`SELECT nickname, email, fullname, about FROM public."person" WHERE nickname = $1`, nickname)
-	err := row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
-	if err != nil && err.Error() != ErrorSqlNoRows {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-	if len(user.Nickname) == 0 {
-		myJSON := ErrorCantFindUser + nickname + `"}`
-
-		w.WriteHeader(http.StatusNotFound)
-		_, err = w.Write([]byte(myJSON))
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(err.Error())
+	user, err := models.GetInstance().GetUser(nickname)
+	if err != nil {
+		if err.Error() == ErrorSqlNoRows {
+			myJSON := fmt.Sprintf("%s,%s\"}", ErrorCantFindUser, nickname)
+			w.WriteHeader(http.StatusNotFound)
+			_, err := w.Write([]byte(myJSON))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logger.Error.Println(err.Error())
+				return
+			}
 			return
 		}
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
