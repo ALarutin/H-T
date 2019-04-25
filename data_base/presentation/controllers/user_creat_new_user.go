@@ -34,33 +34,33 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 	user.Nickname = nickname
 
 	err = models.GetInstance().CreateUser(user)
-	if err, ok := err.(*pq.Error); ok && err.Code.Class() != ErrorUniqueViolation {
+	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code.Class() != ErrorUniqueViolation {
 		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		logger.Error.Println(err.Code.Class())
+		logger.Error.Println(pqErr.Error())
+		logger.Error.Println(pqErr.Code.Class())
 		return
-	} else if ok && err.Code.Class() == ErrorUniqueViolation {
+	} else if ok && pqErr.Code.Class() == ErrorUniqueViolation {
 
 		users, err := models.GetInstance().SelectUsers(user.Nickname, user.Email)
-		if _err, ok := err.(*pq.Error); ok {
+		if pqErr, ok := err.(*pq.Error); ok {
 			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(_err.Code.Class())
-			logger.Error.Println(_err.Error())
+			logger.Error.Println(pqErr.Code.Class())
+			logger.Error.Println(pqErr.Error())
 			return
 		}
 
-		data, _err := json.Marshal(users)
-		if _err != nil {
+		data, err := json.Marshal(users)
+		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(_err.Error())
+			logger.Error.Println(err.Error())
 			return
 		}
 
 		w.WriteHeader(http.StatusConflict)
-		_, _err = w.Write(data)
-		if _err != nil {
+		_, err = w.Write(data)
+		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(_err.Error())
+			logger.Error.Println(err.Error())
 			return
 		}
 		return
