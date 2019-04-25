@@ -193,13 +193,13 @@ func GetRouter() (router *mux.Router) {
 			Method:  http.MethodPost,
 			Handler: controllers.CreatNewUserHandler,
 		},
-		//{
-		//	Info:    "Handler for changing user data.",
-		//	Name:    "user_ChangUserData",
-		//	Path:    "/{nickname}/profile",
-		//	Method:  http.MethodPost,
-		//	Handler: controllers.ChangUserDataHandler,
-		//},
+		{
+			Info:    "Handler for changing user data.",
+			Name:    "user_ChangUserData",
+			Path:    "/{nickname}/profile",
+			Method:  http.MethodPost,
+			Handler: controllers.ChangUserDataHandler,
+		},
 		{
 			Info:    "Handler for getting information about user.",
 			Name:    "user_GetUserInfo",

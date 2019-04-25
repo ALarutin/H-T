@@ -5,27 +5,27 @@ func (db *dbManager) GetUser(nickname string) (user User, err error) {
 	row := db.dataBase.QueryRow(
 		`SELECT nickname, email, fullname, about FROM public."person" 
 			WHERE nickname = $1`,
-			nickname)
+		nickname)
 	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
 	return
 }
 
-func (db *dbManager) CreateUser(user User) (err error){
+func (db *dbManager) CreateUser(user User) (err error) {
 
 	_, err = db.dataBase.Exec(
 		`INSERT INTO public."person" (email, about, fullname, nickname)
 			  VALUES ($1, $2, $3, $4)`,
-			  user.Email, user.About, user.Fullname, user.Nickname)
+		user.Email, user.About, user.Fullname, user.Nickname)
 	return
 }
 
-func (db *dbManager) SelectUsers(nickname string, email string) (users []User, err error){
+func (db *dbManager) SelectUsers(nickname string, email string) (users []User, err error) {
 
 	rows, err := db.dataBase.Query(
 		`SELECT nickname, email, fullname, about FROM public."person" 
 			WHERE nickname = $1 OR email = $2`,
-			nickname, email)
-	if err !=  nil{
+		nickname, email)
+	if err != nil {
 		return
 	}
 
@@ -40,3 +40,12 @@ func (db *dbManager) SelectUsers(nickname string, email string) (users []User, e
 	return
 }
 
+func (db *dbManager) UpdateUser(user User) (err error) {
+
+	err = db.dataBase.QueryRow(
+		`UPDATE public."person"
+			SET email = $1, fullname = $2, about = $3
+			WHERE nickname = $4 RETURNING id`,
+		user.Email, user.Fullname, user.About, user.Nickname).Scan()
+	return
+}
