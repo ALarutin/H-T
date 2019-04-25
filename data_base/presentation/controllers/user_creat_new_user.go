@@ -36,7 +36,7 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 	err = models.GetInstance().CreateUser(user)
 	if pqErr, ok := err.(*pq.Error); ok {
 
-		if ok && pqErr.Code.Class() == ErrorUniqueViolation {
+		if pqErr.Code.Class() == ErrorUniqueViolation {
 
 			users, err := models.GetInstance().SelectUsers(user.Nickname, user.Email)
 			if pqErr, ok := err.(*pq.Error); ok {

@@ -22,53 +22,53 @@ func GetRouter() (router *mux.Router) {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//forum
 
-	//forumSubRouter := router.PathPrefix("/forum").Subrouter()
-	//
-	//_forum := []Route{
-	//	{
-	//		Info:    "Handler for creating forum.",
-	//		Name:    "forum_CreatForum",
-	//		Path:    "/create",
-	//		Method:  http.MethodPost,
-	//		Handler: controllers.CreatForumHandler,
-	//	},
-	//	{
-	//		Info:    "Handler for creating branch.",
-	//		Name:    "forum_CreatBranch",
-	//		Path:    "/{slug}/create",
-	//		Method:  http.MethodPost,
-	//		Handler: controllers.CreatBranchHandler,
-	//	},
-	//	{
-	//		Info:    "Handler for obtaining information about the forum.",
-	//		Name:    "forum_GetForumInfo",
-	//		Path:    "/{slug}/details",
-	//		Method:  http.MethodGet,
-	//		Handler: controllers.GetForumInfoHandler,
-	//	},
-	//	{
-	//		Info:    "Handler for getting a list of forum discussion branches.",
-	//		Name:    "forum_GetThreads",
-	//		Path:    "/{slug}/threads",
-	//		Method:  http.MethodGet,
-	//		Handler: controllers.GetThreadsHandler,
-	//	},
-	//	{
-	//		Info:    "Handler for obtaining the users of this forum.",
-	//		Name:    "forum_GetUsers",
-	//		Path:    "/{slug}/users",
-	//		Method:  http.MethodGet,
-	//		Handler: controllers.GetUsersHandler,
-	//	},
-	//}
-	//
-	//for _, r := range _forum {
-	//	forumSubRouter.
-	//		HandleFunc(r.Path, r.Handler).
-	//		Methods(r.Method).
-	//		Name(r.Name)
-	//}
-	//
+	forumSubRouter := router.PathPrefix("/forum").Subrouter()
+
+	_forum := []Route{
+		{
+			Info:    "Handler for creating forum.",
+			Name:    "forum_CreatForum",
+			Path:    "/create",
+			Method:  http.MethodPost,
+			Handler: controllers.CreatForumHandler,
+		},
+		//{
+		//	Info:    "Handler for creating branch.",
+		//	Name:    "forum_CreatBranch",
+		//	Path:    "/{slug}/create",
+		//	Method:  http.MethodPost,
+		//	Handler: controllers.CreatBranchHandler,
+		//},
+		//{
+		//	Info:    "Handler for obtaining information about the forum.",
+		//	Name:    "forum_GetForumInfo",
+		//	Path:    "/{slug}/details",
+		//	Method:  http.MethodGet,
+		//	Handler: controllers.GetForumInfoHandler,
+		//},
+		//{
+		//	Info:    "Handler for getting a list of forum discussion branches.",
+		//	Name:    "forum_GetThreads",
+		//	Path:    "/{slug}/threads",
+		//	Method:  http.MethodGet,
+		//	Handler: controllers.GetThreadsHandler,
+		//},
+		//{
+		//	Info:    "Handler for obtaining the users of this forum.",
+		//	Name:    "forum_GetUsers",
+		//	Path:    "/{slug}/users",
+		//	Method:  http.MethodGet,
+		//	Handler: controllers.GetUsersHandler,
+		//},
+	}
+
+	for _, r := range _forum {
+		forumSubRouter.
+			HandleFunc(r.Path, r.Handler).
+			Methods(r.Method).
+			Name(r.Name)
+	}
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////post
 	//
@@ -198,7 +198,7 @@ func GetRouter() (router *mux.Router) {
 			Name:    "user_ChangUserData",
 			Path:    "/{nickname}/profile",
 			Method:  http.MethodPost,
-			Handler: controllers.ChangUserDataHandler,
+			Handler: controllers.ChangeUserDataHandler,
 		},
 		{
 			Info:    "Handler for getting information about user.",

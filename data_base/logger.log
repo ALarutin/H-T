@@ -1,17 +1,4 @@
-INFO: 2019/04/25 20:36:30 db.go:44: 
+INFO: 2019/04/25 21:12:39 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/25 20:36:30 main.go:14: 
+INFO: 2019/04/25 21:12:39 main.go:14: 
 Started listening at: 5000
-ERROR: 2019/04/25 20:36:32 user_change_user_data.go:38: sql: no rows in result set
-ERROR: 2019/04/25 20:36:32 user_change_user_data.go:40: sql: no rows in result set
-ERROR: 2019/04/25 20:36:32 user_change_user_data.go:55: sql: no rows in result set
-INFO: 2019/04/25 20:36:32 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:49260
-path: /user/gaaaag/profile
-start time: 2.995049ms
-INFO: 2019/04/25 20:37:47 middleware.go:21: 
-method: [GET]
-addr: 127.0.0.1:49260
-path: /user/sssssss/profile
-start time: 536.591µs

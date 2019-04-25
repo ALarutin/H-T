@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
+func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 
@@ -36,8 +36,8 @@ func ChangUserDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = models.GetInstance().UpdateUser(user)
 	if pqErr, ok := err.(*pq.Error); ok || err != nil {
-		logger.Error.Print(err.Error())
-		if ok && pqErr.Code.Class() == ErrorUniqueViolation {
+
+		if pqErr.Code.Class() == ErrorUniqueViolation {
 
 			myJSON := fmt.Sprintf(`{"message": "email %s has already taken by another user"}`, user.Email)
 

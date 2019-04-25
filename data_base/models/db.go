@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	Host     = "localhost"
-	Port     = 5432
-	Subscriber     = "postgres"
-	Password = "1209qawsed"
-	DBName   = "postgres"
+	Host       = "localhost"
+	Port       = 5432
+	Subscriber = "postgres"
+	Password   = "1209qawsed"
+	DBName     = "postgres"
 )
 
 type dbManager struct {
@@ -48,14 +48,11 @@ func init() {
 
 func closeConnection() {
 	err := db.dataBase.Close()
-	if err != nil{
+	if err != nil {
 		logger.Fatal.Println(err.Error())
 	}
 }
 
-func GetInstance() *dbManager{
+func GetInstance() *dbManager {
 	return db
 }
-
-
-

@@ -35,7 +35,9 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+
 		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
 		return
 	}
 
