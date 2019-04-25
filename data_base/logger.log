@@ -1,9 +1,16 @@
-INFO: 2019/04/25 19:16:31 db.go:44: 
+INFO: 2019/04/25 19:24:12 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/25 19:16:31 main.go:14: 
+INFO: 2019/04/25 19:24:12 main.go:14: 
 Started listening at: 5000
-INFO: 2019/04/25 19:17:47 middleware.go:21: 
+ERROR: 2019/04/25 19:24:16 user.go:12: sql: no rows in result set
+INFO: 2019/04/25 19:24:16 middleware.go:21: 
 method: [GET]
-addr: 127.0.0.1:64897
-path: /user/GH/profile
-start time: 6.449129ms
+addr: 127.0.0.1:64998
+path: /user/KKKK/profile
+start time: 3.492945ms
+ERROR: 2019/04/25 19:24:25 user.go:12: sql: no rows in result set
+INFO: 2019/04/25 19:24:25 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:64998
+path: /user/ssss/profile
+start time: 582.762µs
