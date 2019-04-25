@@ -186,13 +186,13 @@ func GetRouter() (router *mux.Router) {
 	userSubRouter := router.PathPrefix("/user").Subrouter()
 
 	_user := []Route{
-		//{
-		//	Info:    "Handler for creating new user.",
-		//	Name:    "user_CreatNewUser",
-		//	Path:    "/{nickname}/create",
-		//	Method:  http.MethodPost,
-		//	Handler: controllers.CreatNewUserHandler,
-		//},
+		{
+			Info:    "Handler for creating new user.",
+			Name:    "user_CreatNewUser",
+			Path:    "/{nickname}/create",
+			Method:  http.MethodPost,
+			Handler: controllers.CreatNewUserHandler,
+		},
 		//{
 		//	Info:    "Handler for changing user data.",
 		//	Name:    "user_ChangUserData",
