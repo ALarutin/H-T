@@ -14,11 +14,22 @@ func (db *dbManager) CreatePost(post Post, slug string, threadId int) (p Post, e
 	return
 }
 
-func (db *dbManager) GetThread (slug string, threadId int) (thread Thread, err error){
+func (db *dbManager) GetThread(slug string, threadId int) (thread Thread, err error) {
 	row := db.dataBase.QueryRow(
 		`SELECT * FROM public."thread" WHERE slug = $1 OR id = $2`,
 		slug, threadId)
 	err = row.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum,
-		&thread.Title, &thread.Message, &thread.Votes, &thread.Created,)
+		&thread.Title, &thread.Message, &thread.Votes, &thread.Created)
+	return
+}
+
+func (db *dbManager) UpdateThread(message string, title string, slug string, threadId int) (thread Thread, err error) {
+	row := db.dataBase.QueryRow(
+		`UPDATE public."thread"
+				SET message = $1, title = $2
+				WHERE slug = $3 OR id = $4 RETURNING *`,
+				message, title, slug, threadId)
+	err = row.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum,
+		&thread.Title, &thread.Message, &thread.Votes, &thread.Created)
 	return
 }

@@ -1,10 +1,31 @@
-INFO: 2019/04/29 22:58:12 db.go:44: 
+INFO: 2019/04/29 23:15:17 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/29 22:58:12 main.go:14: 
+INFO: 2019/04/29 23:15:17 main.go:14: 
 Started listening at: 5000
-ERROR: 2019/04/29 22:58:14 thread_get_thread_info.go:26: strconv.Atoi: parsing "fgfggaa": invalid syntax
-INFO: 2019/04/29 22:58:14 middleware.go:21: 
-method: [GET]
-addr: 127.0.0.1:59755
-path: /thread/fgfggaa/details
-start time: 2.827482ms
+ERROR: 2019/04/29 23:15:20 thread_update_branch.go:26: strconv.Atoi: parsing "fgfgfgaa": invalid syntax
+INFO: 2019/04/29 23:15:20 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:59831
+path: /thread/fgfgfgaa/details
+start time: 5.627995ms
+ERROR: 2019/04/29 23:15:29 thread_update_branch.go:26: strconv.Atoi: parsing "fgfgfaa": invalid syntax
+INFO: 2019/04/29 23:15:29 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:59831
+path: /thread/fgfgfaa/details
+start time: 5.557274ms
+INFO: 2019/04/29 23:15:33 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:59831
+path: /thread/2/details
+start time: 9.492931ms
+INFO: 2019/04/29 23:15:39 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:59831
+path: /thread/2/details
+start time: 5.517142ms
+INFO: 2019/04/29 23:15:43 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:59831
+path: /thread/3/details
+start time: 724.871µs

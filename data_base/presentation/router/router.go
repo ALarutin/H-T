@@ -142,13 +142,13 @@ func GetRouter() (router *mux.Router) {
 			Method:  http.MethodPost,
 			Handler: controllers.CreatNewPostHandler,
 		},
-	//	{
-	//		Info:    "Handler for updating the branch.",
-	//		Name:    "thread_UpdateBranch",
-	//		Path:    "/{slug_or_id}/details",
-	//		Method:  http.MethodPost,
-	//		Handler: controllers.UpdateBranchHandler,
-	//	},
+		{
+			Info:    "Handler for updating the branch.",
+			Name:    "thread_UpdateBranch",
+			Path:    "/{slug_or_id}/details",
+			Method:  http.MethodPost,
+			Handler: controllers.UpdateBranchHandler,
+		},
 	//	{
 	//		Info:    "Handler for voting the discussion thread.",
 	//		Name:    "thread_VoteThread",
