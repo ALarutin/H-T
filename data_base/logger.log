@@ -1,20 +1,10 @@
-INFO: 2019/04/29 13:26:05 db.go:44: 
+INFO: 2019/04/29 22:58:12 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/29 13:26:05 main.go:14: 
+INFO: 2019/04/29 22:58:12 main.go:14: 
 Started listening at: 5000
-ERROR: 2019/04/29 13:27:14 thread_creat_new_post.go:107: pq: insert or update on table "post" violates foreign key constraint "post_parent_fk"
-ERROR: 2019/04/29 13:27:14 thread_creat_new_post.go:108: 23
-ERROR: 2019/04/29 13:27:14 thread_creat_new_post.go:110: post_parent_fk
-INFO: 2019/04/29 13:27:14 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:58827
-path: /thread/2/create
-start time: 4.137383ms
-ERROR: 2019/04/29 13:28:33 thread_creat_new_post.go:107: pq: null value in column "thread" violates not-null constraint
-ERROR: 2019/04/29 13:28:33 thread_creat_new_post.go:108: 23
-ERROR: 2019/04/29 13:28:33 thread_creat_new_post.go:110: 
-INFO: 2019/04/29 13:28:33 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:58827
-path: /thread/8/create
-start time: 1.029493ms
+ERROR: 2019/04/29 22:58:14 thread_get_thread_info.go:26: strconv.Atoi: parsing "fgfggaa": invalid syntax
+INFO: 2019/04/29 22:58:14 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:59755
+path: /thread/fgfggaa/details
+start time: 2.827482ms

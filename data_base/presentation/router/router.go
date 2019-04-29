@@ -156,13 +156,13 @@ func GetRouter() (router *mux.Router) {
 	//		Method:  http.MethodPost,
 	//		Handler: controllers.VoteThreadHandler,
 	//	},
-	//	{
-	//		Info:    "Handler for getting information about the discussion thread.",
-	//		Name:    "thread_GetThreadInfoThread",
-	//		Path:    "/{slug_or_id}/details",
-	//		Method:  http.MethodGet,
-	//		Handler: controllers.GetThreadInfoThreadHandler,
-	//	},
+		{
+			Info:    "Handler for getting information about the discussion thread.",
+			Name:    "thread_GetThreadInfoThread",
+			Path:    "/{slug_or_id}/details",
+			Method:  http.MethodGet,
+			Handler: controllers.GetThreadInfoThreadHandler,
+		},
 	//	{
 	//		Info:    "Handler for getting messages of this branch of the discussion.",
 	//		Name:    "thread_GetBranchMessages",

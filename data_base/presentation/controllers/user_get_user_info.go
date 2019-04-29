@@ -23,7 +23,6 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := models.GetInstance().GetUser(nickname)
 	if err != nil {
-
 		if err.Error() == errorSqlNoRows {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindUser, nickname)
 			w.WriteHeader(http.StatusNotFound)

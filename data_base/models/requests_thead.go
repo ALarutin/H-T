@@ -13,3 +13,12 @@ func (db *dbManager) CreatePost(post Post, slug string, threadId int) (p Post, e
 	p.Message = post.Message
 	return
 }
+
+func (db *dbManager) GetThread (slug string, threadId int) (thread Thread, err error){
+	row := db.dataBase.QueryRow(
+		`SELECT * FROM public."thread" WHERE slug = $1 OR id = $2`,
+		slug, threadId)
+	err = row.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum,
+		&thread.Title, &thread.Message, &thread.Votes, &thread.Created,)
+	return
+}
