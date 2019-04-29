@@ -141,7 +141,7 @@ CREATE TABLE post
   author    citext                                             NOT NULL,
   thread    INT                                                NOT NULL,
   forum     citext                                             NOT NULL,
-  message   text                     DEFAULT ''                         NOT NULL,
+  message   text                     DEFAULT ''                NOT NULL,
   is_edited boolean                  DEFAULT FALSE             NOT NULL,
   parent    int                                                NOT NULL,
   created   timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -215,7 +215,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 CREATE TRIGGER update_thread_votes
-  AFTER INSERT OR UPDATE
+  AFTER INSERT
   on vote
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();

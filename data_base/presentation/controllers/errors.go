@@ -20,8 +20,9 @@ const (
 	forumUserForeignKey     = `forum_user_fk`
 	threadForumForeignKey   = `thread_forum_fk`
 	threadAuthorForeignKey  = `thread_author_fk`
-	postParentForeignKeyKey = `post_parent_fk`
-	postAuthorForeignKeyKey = `post_author_fk`
+	postParentForeignKey = `post_parent_fk`
+	postAuthorForeignKey = `post_author_fk`
+	voteThreadForeignKey = `vote_thread_fk`
 	forumPrimaryKey         = `forum_pk`
 	threadPrimaryKey        = `thread_pk`
 )

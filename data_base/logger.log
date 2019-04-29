@@ -1,31 +1,68 @@
-INFO: 2019/04/29 23:15:17 db.go:44: 
+INFO: 2019/04/30 00:55:47 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/29 23:15:17 main.go:14: 
+INFO: 2019/04/30 00:55:47 main.go:14: 
 Started listening at: 5000
-ERROR: 2019/04/29 23:15:20 thread_update_branch.go:26: strconv.Atoi: parsing "fgfgfgaa": invalid syntax
-INFO: 2019/04/29 23:15:20 middleware.go:21: 
+ERROR: 2019/04/30 00:56:08 thread_vote_thread.go:26: strconv.Atoi: parsing "fgfgfgaa": invalid syntax
+ERROR: 2019/04/30 00:56:08 thread_vote_thread.go:30: fgfgfgaa
+ERROR: 2019/04/30 00:56:08 requests_thead.go:40: fgfgfgaa
+INFO: 2019/04/30 00:56:08 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:59831
-path: /thread/fgfgfgaa/details
-start time: 5.627995ms
-ERROR: 2019/04/29 23:15:29 thread_update_branch.go:26: strconv.Atoi: parsing "fgfgfaa": invalid syntax
-INFO: 2019/04/29 23:15:29 middleware.go:21: 
+addr: 127.0.0.1:60459
+path: /thread/fgfgfgaa/vote
+start time: 5.902245ms
+ERROR: 2019/04/30 00:56:10 thread_vote_thread.go:26: strconv.Atoi: parsing "fgfgfgaa": invalid syntax
+ERROR: 2019/04/30 00:56:10 thread_vote_thread.go:30: fgfgfgaa
+ERROR: 2019/04/30 00:56:10 requests_thead.go:40: fgfgfgaa
+INFO: 2019/04/30 00:56:10 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:59831
-path: /thread/fgfgfaa/details
-start time: 5.557274ms
-INFO: 2019/04/29 23:15:33 middleware.go:21: 
+addr: 127.0.0.1:60459
+path: /thread/fgfgfgaa/vote
+start time: 1.879808ms
+ERROR: 2019/04/30 00:56:41 thread_vote_thread.go:30: 
+ERROR: 2019/04/30 00:56:41 requests_thead.go:40: fgfgfgaa
+INFO: 2019/04/30 00:56:41 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:59831
-path: /thread/2/details
-start time: 9.492931ms
-INFO: 2019/04/29 23:15:39 middleware.go:21: 
+addr: 127.0.0.1:60459
+path: /thread/2/vote
+start time: 4.546047ms
+ERROR: 2019/04/30 00:56:44 thread_vote_thread.go:30: 
+ERROR: 2019/04/30 00:56:44 requests_thead.go:40: fgfgfgaa
+INFO: 2019/04/30 00:56:44 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:59831
-path: /thread/2/details
-start time: 5.517142ms
-INFO: 2019/04/29 23:15:43 middleware.go:21: 
+addr: 127.0.0.1:60459
+path: /thread/2/vote
+start time: 10.57679ms
+ERROR: 2019/04/30 00:56:49 thread_vote_thread.go:30: 
+ERROR: 2019/04/30 00:56:49 requests_thead.go:40: fgfgfgaa
+INFO: 2019/04/30 00:56:49 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:59831
-path: /thread/3/details
-start time: 724.871µs
+addr: 127.0.0.1:60459
+path: /thread/2/vote
+start time: 6.395791ms
+ERROR: 2019/04/30 00:56:52 thread_vote_thread.go:30: 
+ERROR: 2019/04/30 00:56:52 requests_thead.go:40: fgfgfgaa
+INFO: 2019/04/30 00:56:52 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:60459
+path: /thread/2/vote
+start time: 4.27854ms
+ERROR: 2019/04/30 00:57:04 thread_vote_thread.go:30: 
+ERROR: 2019/04/30 00:57:04 requests_thead.go:40: fgfgfgaa
+INFO: 2019/04/30 00:57:04 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:60459
+path: /thread/2/vote
+start time: 9.72617ms
+ERROR: 2019/04/30 00:57:20 thread_vote_thread.go:30: 
+INFO: 2019/04/30 00:57:20 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:60459
+path: /thread/3/vote
+start time: 648.766µs
+ERROR: 2019/04/30 00:57:24 thread_vote_thread.go:26: strconv.Atoi: parsing "aaa": invalid syntax
+ERROR: 2019/04/30 00:57:24 thread_vote_thread.go:30: aaa
+INFO: 2019/04/30 00:57:24 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:60459
+path: /thread/aaa/vote
+start time: 580.419µs

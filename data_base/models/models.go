@@ -38,7 +38,7 @@ type Post struct {
 }
 
 type Vote struct {
-	Thread   string
-	Nickname string
-	Voice    int
+	ThreadSlug string
+	Nickname   string
+	Voice      int
 }

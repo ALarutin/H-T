@@ -51,7 +51,7 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 
 			if pqErr.Code.Class() == errorUniqueViolation{
 
-				if pqErr.Constraint == postParentForeignKeyKey || pqErr.Constraint == postAuthorForeignKeyKey {
+				if pqErr.Constraint == postParentForeignKey || pqErr.Constraint == postAuthorForeignKey {
 					myJSON := fmt.Sprintf(`{"%s%s%v or %s%s"}`,
 						messageCantFind, cantFindParent, post.Parent, cantFindUser, post.Author)
 					w.WriteHeader(http.StatusConflict)

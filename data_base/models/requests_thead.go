@@ -1,5 +1,7 @@
 package models
 
+import "data_base/presentation/logger"
+
 func (db *dbManager) CreatePost(post Post, slug string, threadId int) (p Post, err error) {
 
 	err = db.dataBase.QueryRow(
@@ -31,5 +33,17 @@ func (db *dbManager) UpdateThread(message string, title string, slug string, thr
 				message, title, slug, threadId)
 	err = row.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum,
 		&thread.Title, &thread.Message, &thread.Votes, &thread.Created)
+	return
+}
+
+func (db *dbManager) CreateOrUpdateVote(vote Vote) (err error) {
+	logger.Error.Print(vote.ThreadSlug)
+	_, err = db.dataBase.Exec(
+		`INSERT INTO public."vote" (thread_slug, user_nickname, voice)
+			VALUES ($1, $2, $3)
+			ON CONFLICT ON CONSTRAINT vote_pk DO UPDATE
+			  SET voice = $3
+			  WHERE vote.thread_slug = $1 AND vote.user_nickname = $2`,
+		vote.ThreadSlug, vote.Nickname, vote.Voice)
 	return
 }
