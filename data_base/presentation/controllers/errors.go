@@ -1,24 +1,27 @@
 package controllers
 
 const (
-	messageCantFind          = `message": "cant find `
-	cantFindUser             = `user with nickname `
-	cantFindThread           = `thread with slug `
-	cantFindForum            = `forum with slug `
-	cantFindParent           = `parent with id `
-	emailUsed                = ` has already taken by another user`
-	ErrorNameNoNullViolation = `not_null_violation`
+	messageCantFind = `message": "cant find `
+	cantFindUser    = `user with nickname `
+	cantFindThread  = `thread with slug or id `
+	cantFindForum   = `forum with slug `
+	cantFindParent  = `parent with id `
+	emailUsed       = ` has already taken by another user`
 )
 
 const (
-	errorUniqueViolation = `23`
+	errorUniqueViolation       = `23`
+	errorNameNotNullConstraint = `not-null constraint`
+	errorNameNotNullViolation  = `not_null_violation`
+	errorSqlNoRows             = `sql: no rows in result set`
 )
 
 const (
-	errorSqlNoRows         = `sql: no rows in result set`
-	forumUserForeignKey    = `forum_user_fk`
-	threadForumForeignKey  = `thread_forum_fk`
-	threadAuthorForeignKey = `thread_author_fk`
-	forumPrimaryKey        = `forum_pk`
-	threadPrimaryKey       = `thread_pk`
+	forumUserForeignKey     = `forum_user_fk`
+	threadForumForeignKey   = `thread_forum_fk`
+	threadAuthorForeignKey  = `thread_author_fk`
+	postParentForeignKeyKey = `post_parent_fk`
+	postAuthorForeignKeyKey = `post_author_fk`
+	forumPrimaryKey         = `forum_pk`
+	threadPrimaryKey        = `thread_pk`
 )

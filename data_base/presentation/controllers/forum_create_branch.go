@@ -52,7 +52,8 @@ func CreateBranchHandler(w http.ResponseWriter, r *http.Request) {
 
 			if pqErr.Constraint == threadAuthorForeignKey || pqErr.Constraint == threadForumForeignKey {
 
-				myJSON := fmt.Sprintf(`{"%s%s%s or %s%s"}`, messageCantFind, cantFindUser, thread.Author, cantFindForum, thread.Forum)
+				myJSON := fmt.Sprintf(`{"%s%s%s or %s%s"}`,
+					messageCantFind, cantFindUser, thread.Author, cantFindForum, thread.Forum)
 
 				w.WriteHeader(http.StatusNotFound)
 				_, _err := w.Write([]byte(myJSON))

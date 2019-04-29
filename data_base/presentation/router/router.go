@@ -129,19 +129,19 @@ func GetRouter() (router *mux.Router) {
 	//		HandlerFunc(r.Handler)
 	//}
 	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	////thread
-	//
-	//threadSubRouter := router.PathPrefix("/thread").Subrouter()
-	//
-	//_thread := []Route{
-	//	{
-	//		Info:    "Handler for creating new post.",
-	//		Name:    "thread_CreatNewPost",
-	//		Path:    "/{slug_or_id}/create",
-	//		Method:  http.MethodPost,
-	//		Handler: controllers.CreatNewPostHandler,
-	//	},
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//thread
+
+	threadSubRouter := router.PathPrefix("/thread").Subrouter()
+
+	_thread := []Route{
+		{
+			Info:    "Handler for creating new post.",
+			Name:    "thread_CreatNewPost",
+			Path:    "/{slug_or_id}/create",
+			Method:  http.MethodPost,
+			Handler: controllers.CreatNewPostHandler,
+		},
 	//	{
 	//		Info:    "Handler for updating the branch.",
 	//		Name:    "thread_UpdateBranch",
@@ -170,15 +170,15 @@ func GetRouter() (router *mux.Router) {
 	//		Method:  http.MethodGet,
 	//		Handler: controllers.GetBranchMessagesHandler,
 	//	},
-	//}
-	//
-	//for _, r := range _thread {
-	//	threadSubRouter.
-	//		Methods(r.Method).
-	//		Name(r.Name).
-	//		Path(r.Path).
-	//		HandlerFunc(r.Handler)
-	//}
+	}
+
+	for _, r := range _thread {
+		threadSubRouter.
+			Methods(r.Method).
+			Name(r.Name).
+			Path(r.Path).
+			HandlerFunc(r.Handler)
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//user

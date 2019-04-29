@@ -3,11 +3,11 @@ CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 -- table person
 CREATE TABLE person
 (
-  id       serial not null,
-  nickname citext not null,
-  email    citext not null,
-  fullname text   not null,
-  about    text   not null
+  id       SERIAL NOT NULL,
+  nickname citext NOT NULL,
+  email    citext NOT NULL,
+  fullname text   NOT NULL,
+  about    text   NOT NULL
 );
 
 CREATE UNIQUE INDEX person_email_ui
@@ -16,16 +16,18 @@ CREATE UNIQUE INDEX person_email_ui
 ALTER TABLE public.person
   ADD CONSTRAINT person_pk PRIMARY KEY (nickname);
 
+INSERT INTO public."person" (email, about, fullname, nickname)
+VALUES ('admin@admin.com', 'something', 'admin', 'admin');
 
 -- table forum
 CREATE TABLE forum
 (
-  id      serial not null,
-  slug    citext not null,
-  author  citext not null,
-  title   text   not null,
-  posts   int    not null,
-  threads int    not null
+  id      SERIAL          NOT NULL,
+  slug    citext          NOT NULL,
+  author  citext          NOT NULL,
+  title   text DEFAULT '' NOT NULL,
+  posts   INT  DEFAULT 0  NOT NULL,
+  threads INT  DEFAULT 0  NOT NULL
 );
 
 ALTER TABLE public.forum
@@ -47,23 +49,42 @@ $BODY$
 
 CREATE TRIGGER update_forum_users_on_forum
   AFTER INSERT
-  on forum
+  ON forum
   FOR EACH ROW
 EXECUTE PROCEDURE update_forum_users_on_forum();
+
+-- table forum_users
+CREATE TABLE forum_users
+(
+  forum_slug    citext NOT NULL,
+  user_nickname citext NOT NULL
+);
+
+ALTER TABLE ONLY public.forum_users
+  ADD CONSTRAINT "forum_users_forum_slug_fk" FOREIGN KEY (forum_slug) REFERENCES public.forum (slug);
+
+ALTER TABLE ONLY public.forum_users
+  ADD CONSTRAINT "forum_users_user_nickname_fk" FOREIGN KEY (user_nickname) REFERENCES public.person (nickname);
+
+INSERT INTO public."forum" (author, slug)
+VALUES ('admin', 'admin');
 
 
 -- table thread
 CREATE TABLE thread
 (
-  id      serial                                             not null,
-  slug    citext                                             not null,
-  author  citext                                             not null,
-  forum   citext                                             not null,
-  title   text                                               not null,
-  message text                                               not null,
-  votes   int                                                not null,
-  created timestamp with time zone DEFAULT CURRENT_TIMESTAMP not null
+  id      SERIAL                                             NOT NULL,
+  slug    citext                                             NOT NULL,
+  author  citext                                             NOT NULL,
+  forum   citext                                             NOT NULL,
+  title   text                     DEFAULT ''                NOT NULL,
+  message text                     DEFAULT ''                NOT NULL,
+  votes   INT                      DEFAULT 0                 NOT NULL,
+  created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+CREATE UNIQUE INDEX thread_id_ui
+  ON public.thread (id);
 
 ALTER TABLE public.thread
   ADD CONSTRAINT thread_pk PRIMARY KEY (slug);
@@ -88,7 +109,7 @@ $BODY$
 
 CREATE TRIGGER update_forum_threads
   AFTER INSERT
-  on thread
+  ON thread
   FOR EACH ROW
 EXECUTE PROCEDURE update_threads_quantity();
 
@@ -105,22 +126,25 @@ $BODY$
 
 CREATE TRIGGER update_forum_users_on_thread
   AFTER INSERT
-  on thread
+  ON thread
   FOR EACH ROW
 EXECUTE PROCEDURE update_forum_users_on_thread();
+
+INSERT INTO public."thread" (author, forum, slug)
+VALUES ('admin', 'admin', 'admin');
 
 
 -- table post
 CREATE TABLE post
 (
-  id        serial                                             not null,
-  author    citext                                             not null,
-  thread    citext                                             not null,
-  forum     citext                                             not null,
-  message   text                                               not null,
-  is_edited boolean                  default false             not null,
-  parent    int,
-  created   timestamp with time zone DEFAULT CURRENT_TIMESTAMP not null,
+  id        SERIAL                                             NOT NULL,
+  author    citext                                             NOT NULL,
+  thread    INT                                                NOT NULL,
+  forum     citext                                             NOT NULL,
+  message   text                     DEFAULT ''                         NOT NULL,
+  is_edited boolean                  DEFAULT FALSE             NOT NULL,
+  parent    int                                                NOT NULL,
+  created   timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
   post_path integer[]                DEFAULT '{}'::integer[]
 );
 
@@ -131,7 +155,7 @@ ALTER TABLE ONLY public.post
   ADD CONSTRAINT "post_author_fk" FOREIGN KEY (author) REFERENCES public.person (nickname);
 
 ALTER TABLE ONLY public.post
-  ADD CONSTRAINT "post_thread_fk" FOREIGN KEY (thread) REFERENCES public.thread (slug);
+  ADD CONSTRAINT "post_thread_fk" FOREIGN KEY (thread) REFERENCES public.thread (id);
 
 ALTER TABLE ONLY public.post
   ADD CONSTRAINT "post_forum_fk" FOREIGN KEY (forum) REFERENCES public.forum (slug);
@@ -153,31 +177,20 @@ $BODY$
 
 CREATE TRIGGER update_forum_posts
   AFTER INSERT
-  on post
+  ON post
   FOR EACH ROW
 EXECUTE PROCEDURE update_posts_quantity();
 
-
--- table forum_users
-CREATE TABLE forum_users
-(
-  forum_slug    citext not null,
-  user_nickname citext not null
-);
-
-ALTER TABLE ONLY public.forum_users
-  ADD CONSTRAINT "forum_users_forum_slug_fk" FOREIGN KEY (forum_slug) REFERENCES public.forum (slug);
-
-ALTER TABLE ONLY public.forum_users
-  ADD CONSTRAINT "forum_users_user_nickname_fk" FOREIGN KEY (user_nickname) REFERENCES public.person (nickname);
+INSERT INTO public."post" (id, author, thread, forum, parent)
+VALUES (0, 'admin', '1', 'admin', 0);
 
 
 -- table vote
 CREATE TABLE vote
 (
-  thread_slug   citext not null,
-  user_nickname citext not null,
-  voice         int    not null
+  thread_slug   citext NOT NULL,
+  user_nickname citext NOT NULL,
+  voice         INT    NOT NULL
 );
 
 ALTER TABLE public.vote
