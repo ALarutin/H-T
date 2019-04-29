@@ -29,58 +29,6 @@ func VoteThreadHandler(w http.ResponseWriter, r *http.Request) {
 	}
  	logger.Error.Print(slug)
 
-	//row := models.DB.DatBase.QueryRow(`SELECT * FROM public."thread" WHERE slug = $1 OR id = $2`, slug, i)
-	//
-	//var thread models.Branch
-	//
-	//err = row.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes, &thread.Created)
-	//if err != nil && err.Error() != ErrorSqlNoRows {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	logger.Error.Println(err.Error())
-	//	return
-	//}
-	//if len(thread.Slug) == 0 {
-	//
-	//	myJSON := ErrorCantFindThread + slug + `"}`
-	//
-	//	w.WriteHeader(http.StatusNotFound)
-	//	_, err = w.Write([]byte(myJSON))
-	//	if err != nil {
-	//		w.WriteHeader(http.StatusInternalServerError)
-	//		logger.Error.Println(err.Error())
-	//		return
-	//	}
-	//	return
-	//}
-	//
-
-	//vote.Voice = i
-	//vote.Thread = slug
-	//
-	//row = models.DB.DatBase.QueryRow(`SELECT nickname FROM public."person" WHERE nickname = $1`, vote.Nickname)
-	//
-	//var user models.Users
-	//
-	//err = row.Scan(&user.Nickname)
-	//if err != nil && err.Error() != ErrorSqlNoRows {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	logger.Error.Println(err.Error())
-	//	return
-	//}
-	//if len(user.Nickname) == 0 {
-	//
-	//	myJSON := ErrorCantFindUser + vote.Nickname + `"}`
-	//
-	//	w.WriteHeader(http.StatusNotFound)
-	//	_, err = w.Write([]byte(myJSON))
-	//	if err != nil {
-	//		w.WriteHeader(http.StatusInternalServerError)
-	//		logger.Error.Println(err.Error())
-	//		return
-	//	}
-	//	return
-	//}
-
 	thread, err := models.GetInstance().GetThread(slug, id)
 	if err != nil  {
 		if err.Error() == errorSqlNoRows{

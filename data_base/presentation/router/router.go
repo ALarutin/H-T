@@ -72,16 +72,16 @@ func GetRouter() (router *mux.Router) {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////post
 	//
-	//postSubRouter := router.PathPrefix("/post").Subrouter()
-	//
-	//_post := []Route{
-	//	{
-	//		Info:    "Handler for changing the message.",
-	//		Name:    "post_ChangeMessage",
-	//		Path:    "/{id}/details",
-	//		Method:  http.MethodPost,
-	//		Handler: controllers.ChangeMessageHandler,
-	//	},
+	postSubRouter := router.PathPrefix("/post").Subrouter()
+
+	_post := []Route{
+		{
+			Info:    "Handler for changing the message.",
+			Name:    "post_ChangeMessage",
+			Path:    "/{id}/details",
+			Method:  http.MethodPost,
+			Handler: controllers.ChangeMessageHandler,
+		},
 	//	{
 	//		Info:    "Handler for getting information about the discussion thread.",
 	//		Name:    "post_GetThreadInfoPost",
@@ -89,15 +89,15 @@ func GetRouter() (router *mux.Router) {
 	//		Method:  http.MethodGet,
 	//		Handler: controllers.GetThreadInfoPostHandler,
 	//	},
-	//}
-	//
-	//for _, r := range _post {
-	//	postSubRouter.
-	//		Methods(r.Method).
-	//		Name(r.Name).
-	//		Path(r.Path).
-	//		HandlerFunc(r.Handler)
-	//}
+	}
+
+	for _, r := range _post {
+		postSubRouter.
+			Methods(r.Method).
+			Name(r.Name).
+			Path(r.Path).
+			HandlerFunc(r.Handler)
+	}
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////service

@@ -181,6 +181,24 @@ CREATE TRIGGER update_forum_posts
   FOR EACH ROW
 EXECUTE PROCEDURE update_posts_quantity();
 
+CREATE OR REPLACE FUNCTION update_post_quantity()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  UPDATE public."post"
+  SET is_edited = TRUE
+  WHERE "id" = NEW."id";
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER update_post
+  AFTER UPDATE OF message
+  ON post
+  FOR EACH ROW
+EXECUTE PROCEDURE update_post_quantity();
+
 INSERT INTO public."post" (id, author, thread, forum, parent)
 VALUES (0, 'admin', '1', 'admin', 0);
 
@@ -219,3 +237,6 @@ CREATE TRIGGER update_thread_votes
   on vote
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();
+
+
+

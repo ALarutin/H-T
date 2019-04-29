@@ -6,6 +6,7 @@ const (
 	cantFindThread  = `thread with slug or id `
 	cantFindForum   = `forum with slug `
 	cantFindParent  = `parent with id `
+	cantFindPost  = `post with id `
 	emailUsed       = ` has already taken by another user`
 )
 
