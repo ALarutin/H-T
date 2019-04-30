@@ -1,5 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
+
 -- table person
 CREATE TABLE person
 (
@@ -15,6 +16,15 @@ CREATE UNIQUE INDEX person_email_ui
 
 ALTER TABLE public.person
   ADD CONSTRAINT person_pk PRIMARY KEY (nickname);
+
+CREATE TYPE public.type_person AS (
+  is_new BOOLEAN,
+  id BIGINT,
+  nickname citext,
+  email citext,
+  about text,
+  fullname text
+  );
 
 INSERT INTO public."person" (email, about, fullname, nickname)
 VALUES ('admin@admin.com', 'something', 'admin', 'admin');
@@ -238,5 +248,105 @@ CREATE TRIGGER update_thread_votes
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();
 
+CREATE OR REPLACE FUNCTION add_admin()
+  RETURNS VOID AS
+$BODY$
+BEGIN
+  INSERT INTO public."person" (email, about, fullname, nickname)
+  VALUES ('admin@admin.com', 'something', 'admin', 'admin');
+  INSERT INTO public."forum" (author, slug)
+  VALUES ('admin', 'admin');
+  INSERT INTO public."thread" (author, forum, slug)
+  VALUES ('admin', 'admin', 'admin');
+  INSERT INTO public."post" (id, author, thread, forum, parent)
+  VALUES (0, 'admin', '1', 'admin', 0);
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION clear_database()
+  RETURNS VOID AS
+$BODY$
+BEGIN
+  TRUNCATE TABLE public.forum, public.forum_users, public.person, public.post, public.thread, public.vote
+    RESTART IDENTITY;
+  PERFORM add_admin();
+END;
+$BODY$
+  LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION func_create_user(arg_nickname citext, arg_email citext, arg_fullname text, arg_about text)
+  RETURNS SETOF public.type_person
+AS
+$BODY$
+DECLARE
+  result public.type_person;
+  rec    RECORD;
+BEGIN
+  INSERT INTO person (nickname, email, fullname, about)
+  VALUES (arg_nickname, arg_email, arg_fullname, arg_about) RETURNING *
+    INTO result.id, result.nickname, result.fullname, result.about, result.email;
+  result.is_new := true;
+  RETURN next result;
+EXCEPTION
+  WHEN unique_violation THEN
+    FOR rec IN SELECT *
+               FROM public.person
+               WHERE nickname = arg_nickname
+                  OR email = arg_email
+      LOOP
+        result.id := rec.id;
+        result.nickname := rec.nickname;
+        result.fullname := rec.fullname;
+        result.about := rec.about;
+        result.email := rec.email;
+        result.is_new := false;
+        RETURN NEXT result;
+      END LOOP;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_user(arg_nickname citext)
+  RETURNS public.type_person
+AS
+$BODY$
+DECLARE
+  result public.type_person;
+BEGIN
+  SELECT *
+    INTO result.id, result.nickname, result.fullname, result.about, result.email
+  FROM public.person
+    WHERE nickname = arg_nickname;
+  result.is_new := FALSE;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_update_user(arg_nickname citext, arg_email citext, arg_fullname text, arg_about text)
+  RETURNS public.type_person
+AS
+$BODY$
+DECLARE
+  result public.type_person;
+BEGIN
+  UPDATE public.person
+  SET email = arg_email, fullname = arg_fullname, about = arg_about
+  WHERE nickname = arg_nickname RETURNING *
+    INTO result.id, result.nickname, result.email, result.fullname, result.about;
+  result.is_new := FALSE;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  RETURN result;
+EXCEPTION
+  WHEN unique_violation THEN
+    RAISE  unique_violation;
+END;
+$BODY$
+  LANGUAGE plpgsql;

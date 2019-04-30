@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/lib/pq"
 	"net/http"
 )
 
@@ -34,10 +33,10 @@ func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	user.Fullname = r.PostFormValue("fullname")
 	user.Nickname = nickname
 
-	err = models.GetInstance().UpdateUser(user)
-	if pqErr, ok := err.(*pq.Error); ok || err != nil {
+	u, err := models.GetInstance().UpdateUser(user)
+	if err != nil {
 
-		if pqErr.Code.Class() == errorUniqueViolation {
+		if err.Error() == errorUniqueViolation {
 
 			myJSON := fmt.Sprintf(`{"message": "%s%s"}`, user.Email, emailUsed)
 
@@ -65,12 +64,11 @@ func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(pqErr.Error())
-		logger.Error.Println(pqErr.Code.Class())
+		logger.Error.Println(err.Error())
 		return
 	}
 
-	data, err := json.Marshal(user)
+	data, err := json.Marshal(u)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())

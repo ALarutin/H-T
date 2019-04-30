@@ -5,7 +5,6 @@ import (
 	"data_base/presentation/logger"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/lib/pq"
 	"net/http"
 )
 
@@ -33,54 +32,43 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 	user.Fullname = r.PostFormValue("fullname")
 	user.Nickname = nickname
 
-	err = models.GetInstance().CreateUser(user)
-	if pqErr, ok := err.(*pq.Error); ok {
+	users, err := models.GetInstance().CreateUser(user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
+	if users[0].IsNew == true {
 
-		if pqErr.Code.Class() == errorUniqueViolation {
-
-			users, err := models.GetInstance().SelectUsers(user.Nickname, user.Email)
-			if pqErr, ok := err.(*pq.Error); ok {
-				w.WriteHeader(http.StatusInternalServerError)
-				logger.Error.Println(pqErr.Code.Class())
-				logger.Error.Println(pqErr.Error())
-				return
-			}
-
-			data, err := json.Marshal(users)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				logger.Error.Println(err.Error())
-				return
-			}
-
-			w.WriteHeader(http.StatusConflict)
-			_, err = w.Write(data)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				logger.Error.Println(err.Error())
-				return
-			}
+		data, err := json.Marshal(users[0])
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
 			return
 		}
 
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(pqErr.Error())
-		logger.Error.Println(pqErr.Code.Class())
+		w.WriteHeader(http.StatusCreated)
+		_, err = w.Write(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 		return
-	}
+	} else {
+		data, err := json.Marshal(users)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 
-	data, err := json.Marshal(user)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
+		w.WriteHeader(http.StatusConflict)
+		_, err = w.Write(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 	}
 }

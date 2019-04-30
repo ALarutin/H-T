@@ -1,10 +1,12 @@
 package models
 
 type User struct {
-	About    string
-	Email    string
-	Fullname string
-	Nickname string
+	IsNew    bool   `json:"-"`
+	ID       int    `json:"-"`
+	About    string `json:"about"`
+	Email    string `json:"email"`
+	Fullname string `json:"fullname"`
+	Nickname string `json:"nickname"`
 }
 
 type Forum struct {
@@ -28,13 +30,13 @@ type Thread struct {
 
 type Post struct {
 	Author   string `json:"author"`
-	Created  string
-	Forum    string
-	ID       int
-	IsEdited bool
+	Created  string `json:"created"`
+	Forum    string `json:"forum"`
+	ID       int    `json:"id"`
+	IsEdited bool   `json:"isEdited"`
 	Message  string `json:"message"`
 	Parent   int    `json:"parent"`
-	Thread   int
+	Thread   int    `json:"threads"`
 }
 
 type Vote struct {

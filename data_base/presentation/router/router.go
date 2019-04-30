@@ -69,9 +69,9 @@ func GetRouter() (router *mux.Router) {
 			Name(r.Name)
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	////post
-	//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//post
+
 	postSubRouter := router.PathPrefix("/post").Subrouter()
 
 	_post := []Route{
@@ -98,20 +98,20 @@ func GetRouter() (router *mux.Router) {
 			Path(r.Path).
 			HandlerFunc(r.Handler)
 	}
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	////service
-	//
-	//serviceSubRouter := router.PathPrefix("/service").Subrouter()
-	//
-	//_service := []Route{
-	//	{
-	//		Info:    "Handler for clearing all data in the database.",
-	//		Name:    "service_ClearDataBase",
-	//		Path:    "/clear",
-	//		Method:  http.MethodPost,
-	//		Handler: controllers.ClearDataBaseHandler,
-	//	},
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//service
+
+	serviceSubRouter := router.PathPrefix("/service").Subrouter()
+
+	_service := []Route{
+		{
+			Info:    "Handler for clearing all data in the database.",
+			Name:    "service_ClearDataBase",
+			Path:    "/clear",
+			Method:  http.MethodPost,
+			Handler: controllers.ClearDataBaseHandler,
+		},
 	//	{
 	//		Info:    "Handler for obtaining information about the database.",
 	//		Name:    "service_GetDataBaseInfo",
@@ -119,15 +119,15 @@ func GetRouter() (router *mux.Router) {
 	//		Method:  http.MethodGet,
 	//		Handler: controllers.GetDataBaseInfoHandler,
 	//	},
-	//}
-	//
-	//for _, r := range _service {
-	//	serviceSubRouter.
-	//		Methods(r.Method).
-	//		Name(r.Name).
-	//		Path(r.Path).
-	//		HandlerFunc(r.Handler)
-	//}
+	}
+
+	for _, r := range _service {
+		serviceSubRouter.
+			Methods(r.Method).
+			Name(r.Name).
+			Path(r.Path).
+			HandlerFunc(r.Handler)
+	}
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//thread

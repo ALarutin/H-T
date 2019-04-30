@@ -1,18 +1,9 @@
-INFO: 2019/04/30 01:41:53 db.go:44: 
+INFO: 2019/04/30 16:28:51 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/30 01:41:53 main.go:14: 
+INFO: 2019/04/30 16:28:51 main.go:14: 
 Started listening at: 5000
-ERROR: 2019/04/30 01:41:58 post_change_message.go:39: bla bla bla
-ERROR: 2019/04/30 01:41:58 requests_post.go:7: bla bla bla
-INFO: 2019/04/30 01:41:58 middleware.go:21: 
+INFO: 2019/04/30 16:28:54 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:61019
-path: /post/2/details
-start time: 6.368084ms
-ERROR: 2019/04/30 01:42:02 post_change_message.go:39: bla bla bla
-ERROR: 2019/04/30 01:42:02 requests_post.go:7: bla bla bla
-INFO: 2019/04/30 01:42:02 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:61019
-path: /post/20/details
-start time: 788.666µs
+addr: 127.0.0.1:64726
+path: /user/bobob/profile
+start time: 4.813201ms

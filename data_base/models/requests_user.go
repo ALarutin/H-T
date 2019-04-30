@@ -3,35 +3,22 @@ package models
 func (db *dbManager) GetUser(nickname string) (user User, err error) {
 
 	row := db.dataBase.QueryRow(
-		`SELECT nickname, email, fullname, about FROM public."person" 
-		WHERE nickname = $1`,
+		`SELECT * FROM func_get_user($1::citext)`,
 		nickname)
-	err = row.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
+	err = row.Scan(&user.IsNew, &user.ID, &user.Nickname, &user.Email, &user.Fullname, &user.About)
 	return
 }
 
-func (db *dbManager) CreateUser(user User) (err error) {
+func (db *dbManager) CreateUser(user User) (users []User, err error) {
 
-	_, err = db.dataBase.Exec(
-		`INSERT INTO public."person" (email, about, fullname, nickname)
-		VALUES ($1, $2, $3, $4)`,
-		user.Email, user.About, user.Fullname, user.Nickname)
-	return
-}
-
-func (db *dbManager) SelectUsers(nickname string, email string) (users []User, err error) {
-
-	rows, err := db.dataBase.Query(
-		`SELECT nickname, email, fullname, about FROM public."person" 
-		WHERE nickname = $1 OR email = $2`,
-		nickname, email)
+	rows, err := db.dataBase.Query(`SELECT * FROM func_create_user($1::citext, $2::citext, $3::text, $4::text)`,
+		user.Nickname, user.Email, user.Fullname, user.About)
 	if err != nil {
 		return
 	}
 
-	var user User
 	for rows.Next() {
-		err = rows.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
+		err = rows.Scan(&user.IsNew, &user.ID, &user.Nickname, &user.Email, &user.Fullname, &user.About)
 		if err != nil {
 			return
 		}
@@ -40,12 +27,11 @@ func (db *dbManager) SelectUsers(nickname string, email string) (users []User, e
 	return
 }
 
-func (db *dbManager) UpdateUser(user User) (err error) {
+func (db *dbManager) UpdateUser(user User) (u User, err error) {
 
-	err = db.dataBase.QueryRow(
-		`UPDATE public."person"
-		SET email = $1, fullname = $2, about = $3
-		WHERE nickname = $4 RETURNING id`,
-		user.Email, user.Fullname, user.About, user.Nickname).Scan()
+	row := db.dataBase.QueryRow(
+		`SELECT * FROM func_update_user($1::citext, $2::citext, $3::text, $4::text)`,
+		user.Nickname, user.Email, user.Fullname, user.About)
+	err = row.Scan(&u.IsNew, &u.ID, &u.Nickname, &u.Email, &u.Fullname, &u.About)
 	return
 }
