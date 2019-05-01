@@ -1,70 +1,40 @@
 package models
 
-import (
-	"fmt"
-)
+func (db *dbManager) CreateForum(forum Forum) (f Forum, err error) {
 
-func (db *dbManager) CreateForum(forum Forum) (err error) {
-
-	_, err = db.dataBase.Exec(
-		`INSERT INTO public."forum" (author, slug, title,  posts, threads)
-		VALUES ($1, $2, $3, $4, $5)`,
-		forum.User, forum.Slug, forum.Title, forum.Posts, forum.Threads)
+	row := db.dataBase.QueryRow(`SELECT * FROM func_create_forum($1::citext, $2::citext, $3::text)`,
+		forum.User, forum.Slug, forum.Title)
+	err = row.Scan(&f.IsNew, &f.ID, &f.Slug, &f.User, &f.Title, &f.Posts, &f.Threads)
 	return
 }
 
-func (db *dbManager) SelectForum(slug string) (forum Forum, err error) {
-
-	row := db.dataBase.QueryRow(
-		`SELECT * FROM public."forum" 
-		WHERE slug = $1`,
-		slug)
-	err = row.Scan(&forum.Slug, &forum.User, &forum.Title, &forum.Posts, &forum.Threads)
-	return
-}
-
-func (db *dbManager) CreateThread(thread Thread) (err error) {
-	_, err = db.dataBase.Exec(
-		`INSERT INTO public."thread" (author, created, forum, message, slug, title, votes)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		thread.Author, thread.Created, thread.Forum, thread.Message, thread.Slug, thread.Title, thread.Votes)
-	return
-}
-
-func (db *dbManager) SelectThread(slug string) (thread Thread, err error) {
-
-	row := db.dataBase.QueryRow(
-		`SELECT * FROM public."thread" 
-		WHERE slug = $1`,
-		slug)
-	err = row.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes, &thread.Created)
+func (db *dbManager) CreateThread(thread Thread) (t Thread, err error) {
+	row := db.dataBase.QueryRow(`SELECT * FROM  func_create_thread
+ 	 ($1::citext, $2::TIMESTAMP WITH TIME ZONE, $3::citext, $4::text, $5::citext, $6::text)`,
+ 	 thread.Author, thread.Created, thread.Forum, thread.Message, thread.Slug, thread.Title)
+	err = row.Scan(&t.IsNew, &t.ID, &t.Slug, &t.Author, &t.Forum, &t.Title, &t.Message, &t.Votes, &t.Created)
 	return
 }
 
 func (db *dbManager) GetForum(slug string) (forum Forum, err error) {
 
 	row := db.dataBase.QueryRow(
-		`SELECT * FROM public."forum" 
-		WHERE slug = $1`,
-		slug)
-	err = row.Scan(&forum.Slug, &forum.User, &forum.Title, &forum.Posts, &forum.Threads)
+		`SELECT * FROM func_get_forum($1::citext)`, slug)
+	err = row.Scan(&forum.IsNew, &forum.ID, &forum.Slug, &forum.User, &forum.Title, &forum.Posts, &forum.Threads)
 	return
 }
 
-func (db *dbManager) GetThreads(slug string, since string, desc string, limit string) (threads []Thread, err error) {
+func (db *dbManager) GetThreads(slug string, since string, desc bool, limit int) (threads []Thread, err error) {
 
-	rows, err := db.dataBase.Query(
-		fmt.Sprintf(
-			`SELECT * FROM public."thread"
-			WHERE created >= '%s' AND forum = '%s' ORDER BY created `,
-			since, slug) + fmt.Sprintf(`%s `, desc) + fmt.Sprintf(`LIMIT %s`, limit))
+	rows, err := db.dataBase.Query(`SELECT * FROM func_get_threads($1::citext, $2::TIMESTAMP WITH TIME ZONE,
+  		$3::BOOLEAN, $4::INT)`, slug, since, desc, limit)
 	if err != nil {
 		return
 	}
 
 	var thread Thread
 	for rows.Next() {
-		err = rows.Scan(&thread.ID, &thread.Slug, &thread.Author, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes, &thread.Created)
+		err = rows.Scan(&thread.IsNew, &thread.ID, &thread.Slug, &thread.Author, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes, &thread.Created)
 		if err != nil {
 			return
 		}
@@ -73,32 +43,17 @@ func (db *dbManager) GetThreads(slug string, since string, desc string, limit st
 	return
 }
 
-func (db *dbManager) GetUsers(slug string, since string, desc string, limit string) (users []User, err error) {
+func (db *dbManager) GetUsers(slug string, since int, desc bool, limit int) (users []User, err error) {
 
-	//tempSelect := fmt.Sprintf(
-	//	`SELECT * FROM public."person"
-	//		WHERE nickname in (SELECT user_nickname
-	//		FROM (SELECT * FROM public."forum_users" GROUP BY forum_slug, user_nickname) as m
-	//		WHERE forum_slug = '%s')`,
-	//	slug)
-	tempSelect := fmt.Sprintf(
-		`SELECT * FROM public."person" 
-		WHERE nickname in (SELECT user_nickname
-		FROM  public."forum_users" 
-		WHERE forum_slug = '%s')`,
-		slug)
-	rows, err := db.dataBase.Query(
-		fmt.Sprintf(
-			`SELECT nickname, email, fullname, about 
-			FROM (%s) as p WHERE id >= '%s' ORDER BY id`,
-			tempSelect, since) + fmt.Sprintf(`%s `, desc) + fmt.Sprintf(`LIMIT %s`, limit))
+	rows, err := db.dataBase.Query(`SELECT * FROM func_get_users($1::citext, $2::INT,
+  		$3::BOOLEAN, $4::INT)`, slug, since, desc, limit)
 	if err != nil {
 		return
 	}
 
 	var user User
 	for rows.Next() {
-		err = rows.Scan(&user.Nickname, &user.Email, &user.Fullname, &user.About)
+		err = rows.Scan(&user.IsNew, &user.ID, &user.Nickname, &user.Email, &user.Fullname, &user.About)
 		if err != nil {
 			return
 		}

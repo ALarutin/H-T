@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -19,12 +20,34 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := models.GetInstance().GetForum(slug)
+	limit := r.URL.Query().Get("limit")
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
+
+	since := r.URL.Query().Get("since")
+	sinceInt, err := strconv.Atoi(since)
+	if err != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
+
+	desc := r.URL.Query().Get("desc")
+	var descBool bool
+	if desc == "true" {
+		descBool = true
+	} else if desc == "false" {
+		descBool = false
+	}
+
+	users, err := models.GetInstance().GetUsers(slug, sinceInt, descBool, limitInt)
 	if err != nil {
 		if err.Error() == errorSqlNoRows {
-
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindForum, slug)
-
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(myJSON))
 			if err != nil {
@@ -34,23 +57,6 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-
-	limit := r.URL.Query().Get("limit")
-	since := r.URL.Query().Get("since")
-	desc := r.URL.Query().Get("desc")
-	if desc == "true" {
-		desc = " DESC "
-	} else if desc == "false" {
-		desc = " ASC "
-	}
-
-	users, err := models.GetInstance().GetUsers(slug, since, desc, limit)
-	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

@@ -17,7 +17,8 @@ CREATE UNIQUE INDEX person_email_ui
 ALTER TABLE public.person
   ADD CONSTRAINT person_pk PRIMARY KEY (nickname);
 
-CREATE TYPE public.type_person AS (
+CREATE TYPE public.type_person AS
+  (
   is_new BOOLEAN,
   id BIGINT,
   nickname citext,
@@ -62,6 +63,17 @@ CREATE TRIGGER update_forum_users_on_forum
   ON forum
   FOR EACH ROW
 EXECUTE PROCEDURE update_forum_users_on_forum();
+
+CREATE TYPE public.type_forum AS
+  (
+  is_new BOOLEAN,
+  id BIGINT,
+  slug citext,
+  author citext,
+  title text,
+  posts INT,
+  threads INT
+  );
 
 -- table forum_users
 CREATE TABLE forum_users
@@ -139,6 +151,19 @@ CREATE TRIGGER update_forum_users_on_thread
   ON thread
   FOR EACH ROW
 EXECUTE PROCEDURE update_forum_users_on_thread();
+
+CREATE TYPE public.type_thread AS
+  (
+  is_new BOOLEAN,
+  id BIGINT,
+  slug citext,
+  author citext,
+  forum citext,
+  title text,
+  message text,
+  votes INT,
+  created TIMESTAMP WITH TIME ZONE
+  );
 
 INSERT INTO public."thread" (author, forum, slug)
 VALUES ('admin', 'admin', 'admin');
@@ -315,10 +340,9 @@ $BODY$
 DECLARE
   result public.type_person;
 BEGIN
-  SELECT *
-    INTO result.id, result.nickname, result.fullname, result.about, result.email
+  SELECT * INTO result.id, result.nickname, result.fullname, result.about, result.email
   FROM public.person
-    WHERE nickname = arg_nickname;
+  WHERE nickname = arg_nickname;
   result.is_new := FALSE;
   IF NOT FOUND THEN
     RAISE no_data_found;
@@ -336,7 +360,9 @@ DECLARE
   result public.type_person;
 BEGIN
   UPDATE public.person
-  SET email = arg_email, fullname = arg_fullname, about = arg_about
+  SET email    = arg_email,
+      fullname = arg_fullname,
+      about    = arg_about
   WHERE nickname = arg_nickname RETURNING *
     INTO result.id, result.nickname, result.email, result.fullname, result.about;
   result.is_new := FALSE;
@@ -346,7 +372,142 @@ BEGIN
   RETURN result;
 EXCEPTION
   WHEN unique_violation THEN
-    RAISE  unique_violation;
+    RAISE unique_violation;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_create_forum(arg_author citext, arg_slug citext, arg_title text)
+  RETURNS public.type_forum
+AS
+$BODY$
+DECLARE
+  result public.type_forum;
+BEGIN
+  INSERT INTO public.forum (slug, author, title)
+  VALUES (arg_slug, arg_author, arg_title) RETURNING *
+    INTO result.id, result.slug, result.author, result.title, result.posts, result.threads;
+  result.is_new := TRUE;
+  RETURN result;
+EXCEPTION
+  WHEN unique_violation THEN
+    BEGIN
+      SELECT * INTO result.id, result.slug, result.author, result.title, result.posts, result.threads
+      FROM public.forum f
+      WHERE f.slug = arg_slug;
+      result.is_new := FALSE;
+      RETURN result;
+    END;
+  WHEN foreign_key_violation THEN
+    RAISE no_data_found;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_create_thread(arg_author citext, arg_created TIMESTAMP WITH TIME ZONE, arg_forum citext,
+ arg_message text, arg_slug citext, arg_title text)
+  RETURNS public.type_thread
+AS
+$BODY$
+DECLARE
+  result public.type_thread;
+BEGIN
+  INSERT INTO public.thread (slug, author, forum, title, message, created)
+  VALUES (arg_slug, arg_author, arg_forum, arg_title, arg_message, arg_created) RETURNING *
+    INTO result.id, result.slug, result.author, result.forum, result.title, result.message, result.votes, result.created;
+  result.is_new := TRUE;
+  RETURN result;
+EXCEPTION
+  WHEN unique_violation THEN
+    BEGIN
+      SELECT * INTO result.id, result.slug, result.author, result.forum, result.title, result.message, result.votes, result.created
+      FROM public.thread t
+      WHERE t.slug = arg_slug;
+      result.is_new := FALSE;
+      RETURN result;
+    END;
+  WHEN foreign_key_violation THEN
+    RAISE no_data_found;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_forum(arg_slug citext)
+  RETURNS public.type_forum
+AS
+$BODY$
+DECLARE
+  result public.type_forum;
+BEGIN
+  SELECT * INTO result.id, result.slug, result.author, result.title, result.posts, result.threads
+  FROM public.forum
+  WHERE slug = arg_slug;
+  result.is_new := TRUE;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_threads(arg_slug citext, arg_since TIMESTAMP WITH TIME ZONE, arg_desc BOOLEAN, arg_limit INT)
+  RETURNS SETOF public.type_thread
+AS
+$BODY$
+DECLARE
+  result public.type_thread;
+  rec RECORD;
+BEGIN
+  PERFORM func_get_forum(arg_slug);
+  FOR rec IN SELECT * FROM public.thread
+             WHERE created >= arg_since AND forum = arg_slug
+             ORDER BY
+               (CASE WHEN arg_desc THEN created END) DESC,
+               (CASE WHEN NOT arg_desc THEN created END) ASC
+             LIMIT arg_limit
+  LOOP
+      result.is_new := false;
+      result.id := rec.id;
+      result.slug := rec.slug;
+      result.author := rec.author;
+      result.forum := rec.forum;
+      result.title := rec.title;
+      result.message := rec.message;
+      result.votes := rec.votes;
+      result.created := rec.created;
+      RETURN next result;
+  END LOOP;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_users(arg_slug citext, arg_since INT, arg_desc BOOLEAN, arg_limit INT)
+  RETURNS SETOF public.type_person
+AS
+$BODY$
+DECLARE
+  result public.type_person;
+  rec RECORD;
+BEGIN
+  PERFORM func_get_forum(arg_slug);
+  FOR rec IN SELECT * FROM public.person
+             WHERE nickname IN (SELECT user_nickname
+                                FROM  public.forum_users
+                                WHERE forum_slug = arg_slug) AND id < arg_since
+             ORDER BY
+               (CASE WHEN arg_desc THEN id END) DESC,
+               (CASE WHEN NOT arg_desc THEN id END) ASC
+             LIMIT arg_limit
+    LOOP
+      result.is_new := false;
+      result.id := rec.id;
+      result.nickname := rec.nickname;
+      result.email := rec.email;
+      result.fullname := rec.fullname;
+      result.about := rec.about;
+      RETURN next result;
+    END LOOP;
 END;
 $BODY$
   LANGUAGE plpgsql;

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/lib/pq"
 	"net/http"
 	"strings"
 )
@@ -45,63 +44,40 @@ func CreateBranchHandler(w http.ResponseWriter, r *http.Request) {
 	thread.Title = r.PostFormValue("title")
 	thread.Slug = slugBody
 
-	err = models.GetInstance().CreateThread(thread)
-	if pqErr, ok := err.(*pq.Error); ok {
-
-		if pqErr.Code.Class() == errorUniqueViolation{
-
-			if pqErr.Constraint == threadAuthorForeignKey || pqErr.Constraint == threadForumForeignKey {
-
-				myJSON := fmt.Sprintf(`{"%s%s%s or %s%s"}`,
-					messageCantFind, cantFindUser, thread.Author, cantFindForum, thread.Forum)
-
-				w.WriteHeader(http.StatusNotFound)
-				_, _err := w.Write([]byte(myJSON))
-				if _err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					logger.Error.Println(_err.Error())
-					return
-				}
+	t, err := models.GetInstance().CreateThread(thread)
+	if err != nil {
+		if err.Error() == errorSqlNoRows {
+			myJSON := fmt.Sprintf(`{"%s%s%s or %s%s"}`,
+				messageCantFind, cantFindUser, thread.Author, cantFindForum, thread.Forum)
+			w.WriteHeader(http.StatusNotFound)
+			_, err := w.Write([]byte(myJSON))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logger.Error.Println(err.Error())
 				return
 			}
-
-			if pqErr.Constraint == threadPrimaryKey{
-
-				thread, err := models.GetInstance().SelectThread(thread.Slug)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					logger.Error.Println(err.Error())
-					return
-				}
-
-				data, err := json.Marshal(thread)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					logger.Error.Println(err.Error())
-					return
-				}
-
-				w.WriteHeader(http.StatusConflict)
-				_, err = w.Write(data)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					logger.Error.Println(err.Error())
-					return
-				}
-				return
-			}
+			return
 		}
-
 		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(pqErr.Error())
-		logger.Error.Println(pqErr.Code.Class())
+		logger.Error.Println(err.Error())
 		return
 	}
 
-	data, err := json.Marshal(thread)
+	data, err := json.Marshal(t)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
+		return
+	}
+
+	if t.IsNew == false {
+		w.WriteHeader(http.StatusConflict)
+		_, err = w.Write(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 		return
 	}
 

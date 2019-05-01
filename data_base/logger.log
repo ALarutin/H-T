@@ -1,9 +1,29 @@
-INFO: 2019/04/30 16:28:51 db.go:44: 
+INFO: 2019/05/01 12:54:30 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/04/30 16:28:51 main.go:14: 
+INFO: 2019/05/01 12:54:30 main.go:14: 
 Started listening at: 5000
-INFO: 2019/04/30 16:28:54 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:64726
-path: /user/bobob/profile
-start time: 4.813201ms
+INFO: 2019/05/01 12:54:32 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:50485
+path: /forum/mamss/users
+start time: 5.878444ms
+INFO: 2019/05/01 12:55:14 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:50485
+path: /forum/mamss/users
+start time: 1.148699ms
+INFO: 2019/05/01 12:55:19 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:50485
+path: /forum/mamss/users
+start time: 1.024524ms
+INFO: 2019/05/01 12:55:23 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:50485
+path: /forum/mamsss/users
+start time: 682.219µs
+INFO: 2019/05/01 12:55:27 middleware.go:21: 
+method: [GET]
+addr: 127.0.0.1:50485
+path: /forum/a/users
+start time: 852.187µs

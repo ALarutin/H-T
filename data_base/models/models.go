@@ -10,6 +10,8 @@ type User struct {
 }
 
 type Forum struct {
+	IsNew   bool   `json:"-"`
+	ID      int    `json:"-"`
 	Posts   int    `json:"posts"`
 	Slug    string `json:"slug"`
 	Threads int    `json:"threads"`
@@ -18,6 +20,7 @@ type Forum struct {
 }
 
 type Thread struct {
+	IsNew   bool   `json:"-"`
 	Author  string `json:"author"`
 	Created string `json:"created"`
 	Forum   string `json:"forum"`
