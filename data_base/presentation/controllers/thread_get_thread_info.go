@@ -21,14 +21,14 @@ func GetThreadInfoThreadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := strconv.Atoi(slug)
-	if err != nil{
+	if err != nil {
 		id = 0
 		logger.Error.Println(err.Error())
 	}
 
 	thread, err := models.GetInstance().GetThread(slug, id)
-	if err != nil  {
-		if err.Error() == errorPqNoDataFound{
+	if err != nil {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
 			w.WriteHeader(http.StatusNotFound)
 			_, err = w.Write([]byte(myJSON))

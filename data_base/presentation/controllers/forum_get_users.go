@@ -22,7 +22,7 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 	limit := r.URL.Query().Get("limit")
 	limitInt, err := strconv.Atoi(limit)
-	if err != nil{
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
@@ -30,7 +30,7 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 	since := r.URL.Query().Get("since")
 	sinceInt, err := strconv.Atoi(since)
-	if err != nil{
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

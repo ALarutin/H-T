@@ -3,15 +3,8 @@ package models
 import "github.com/lib/pq"
 
 func (db *dbManager) CreatePost(post Post, id int, forum string) (p Post, err error) {
-
-	//row := db.dataBase.QueryRow(
-	//	`INSERT INTO public."post" (author, thread, forum, message, parent)
-	//	VALUES ($1, (SELECT id FROM public."thread" WHERE slug = $2 OR id = $3), (SELECT forum FROM public."thread" WHERE slug = $2 OR id = $3), $4, $5)
-	//	RETURNING id, created, thread, forum`,
-	//	post.Author, slug, threadId, post.Message, post.Parent)
-
 	row := db.dataBase.QueryRow(`SELECT * FROM func_create_post($1::citext, $2::INT, $3::text, $4::INT, $5::citext)`,
-		post.Author, id, post.Message,  post.Parent, forum)
+		post.Author, id, post.Message, post.Parent, forum)
 	err = row.Scan(&p.ID, &p.Author, &p.Thread, &p.Forum,
 		&p.Message, &p.IsEdited, &p.Parent, &p.Created, pq.Array(&p.Path))
 	return

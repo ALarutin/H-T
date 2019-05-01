@@ -1,6 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
-
 -- table person
 CREATE TABLE person
 (
@@ -233,6 +232,30 @@ CREATE TRIGGER update_post
   ON post
   FOR EACH ROW
 EXECUTE PROCEDURE update_post_quantity();
+
+CREATE OR REPLACE FUNCTION update_post_path()
+  RETURNS trigger AS
+$BODY$
+DECLARE
+  arg_post_path INT[];
+BEGIN
+  SELECT post_path INTO arg_post_path
+  FROM public.post
+  WHERE id = NEW.parent;
+  arg_post_path = arg_post_path || ARRAY [New.id];
+  UPDATE public.post
+  SET post_path = arg_post_path
+  WHERE id = NEW.id;
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER update_post
+  AFTER INSERT
+  ON post
+  FOR EACH ROW
+EXECUTE PROCEDURE update_post_path();
 
 CREATE TYPE public.type_post AS
   (
@@ -573,7 +596,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION func_create_post(arg_author citext, arg_id INT, arg_message text, arg_parent INT,
-                                             arg_forum citext)
+                                            arg_forum citext)
   RETURNS public.type_post
 AS
 $BODY$
@@ -582,9 +605,9 @@ DECLARE
 BEGIN
   INSERT INTO public.post(author, thread, forum, message, parent)
   VALUES (arg_author, arg_id, arg_forum, arg_message, arg_parent) RETURNING *
-  INTO result.id, result.author, result.thread, result.forum,
-    result.message, result.is_edited, result.parent, result.created, result.post_path;
-    RETURN result;
+    INTO result.id, result.author, result.thread, result.forum,
+      result.message, result.is_edited, result.parent, result.created, result.post_path;
+  RETURN result;
 EXCEPTION
   WHEN foreign_key_violation THEN
     RAISE foreign_key_violation;

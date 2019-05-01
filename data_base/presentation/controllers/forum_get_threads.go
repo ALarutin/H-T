@@ -22,7 +22,7 @@ func GetThreadsHandler(w http.ResponseWriter, r *http.Request) {
 
 	limit := r.URL.Query().Get("limit")
 	limitInt, err := strconv.Atoi(limit)
-	if err != nil{
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

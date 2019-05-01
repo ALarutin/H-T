@@ -23,7 +23,7 @@ func VoteThreadHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(slug)
 	if err != nil {
 		id = 0
-	} else{
+	} else {
 		slug = ""
 	}
 
@@ -41,8 +41,8 @@ func VoteThreadHandler(w http.ResponseWriter, r *http.Request) {
 	vote.Voice = i
 
 	thread, err := models.GetInstance().CreateOrUpdateVote(vote, slug, id)
-	if err != nil  {
-		if err.Error() == errorPqNoDataFound{
+	if err != nil {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
 			w.WriteHeader(http.StatusNotFound)
 			_, err = w.Write([]byte(myJSON))

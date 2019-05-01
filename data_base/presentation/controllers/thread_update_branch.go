@@ -21,7 +21,7 @@ func UpdateBranchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := strconv.Atoi(slug)
-	if err != nil{
+	if err != nil {
 		id = 0
 		logger.Error.Println(err.Error())
 	}
@@ -30,8 +30,8 @@ func UpdateBranchHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.PostFormValue("title")
 
 	thread, err := models.GetInstance().UpdateThread(message, title, slug, id)
-	if err != nil  {
-		if err.Error() == errorPqNoDataFound{
+	if err != nil {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
 			w.WriteHeader(http.StatusNotFound)
 			_, err = w.Write([]byte(myJSON))
