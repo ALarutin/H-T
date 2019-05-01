@@ -266,8 +266,7 @@ CREATE TYPE public.type_post AS
   message text,
   is_edited BOOLEAN,
   parent INT,
-  created TIMESTAMP WITH TIME ZONE,
-  post_path INT[]
+  created TIMESTAMP WITH TIME ZONE
   );
 
 INSERT INTO public."post" (id, author, thread, forum, parent)
@@ -557,7 +556,7 @@ BEGIN
              WHERE nickname IN (SELECT user_nickname
                                 FROM public.forum_users
                                 WHERE forum_slug = arg_slug)
-               AND id < arg_since
+               AND id > arg_since
              ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
                       (CASE WHEN NOT arg_desc THEN id END) ASC
              LIMIT arg_limit
@@ -709,6 +708,44 @@ BEGIN
     RAISE no_data_found;
   END IF;
   RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_posts_flat(arg_slug citext, arg_id INT,  arg_limit INT, arg_since INT, arg_desc BOOLEAN)
+  RETURNS SETOF public.type_post
+AS
+$BODY$
+DECLARE
+  result public.type_post;
+  arg_thread_id INT;
+  rec    RECORD;
+BEGIN
+  SELECT id INTO arg_thread_id
+  FROM public.thread
+  WHERE slug = arg_slug
+     OR id = arg_id;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  FOR rec IN SELECT id, author, thread, forum, message, is_edited, parent, created
+             FROM public.post
+             WHERE thread = arg_thread_id
+               AND id > arg_since
+             ORDER BY (CASE WHEN arg_desc THEN created END) DESC,
+                      (CASE WHEN NOT arg_desc THEN created END) ASC
+             LIMIT arg_limit
+    LOOP
+      result.id := rec.id;
+      result.author := rec.author;
+      result.thread := rec.thread;
+      result.forum := rec.forum;
+      result.message := rec.message;
+      result.is_edited := rec.is_edited;
+      result.parent := rec.parent;
+      result.created := rec.created;
+      RETURN next result;
+    END LOOP;
 END;
 $BODY$
   LANGUAGE plpgsql;
