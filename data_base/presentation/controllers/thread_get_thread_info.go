@@ -27,7 +27,6 @@ func GetThreadInfoThreadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	thread, err := models.GetInstance().GetThread(slug, id)
-
 	if err != nil  {
 		if err.Error() == errorSqlNoRows{
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)

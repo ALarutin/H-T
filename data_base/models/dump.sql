@@ -177,10 +177,10 @@ CREATE TABLE post
   thread    INT                                                NOT NULL,
   forum     citext                                             NOT NULL,
   message   text                     DEFAULT ''                NOT NULL,
-  is_edited boolean                  DEFAULT FALSE             NOT NULL,
-  parent    int                                                NOT NULL,
-  created   timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  post_path integer[]                DEFAULT '{}'::integer[]
+  is_edited BOOLEAN                  DEFAULT FALSE             NOT NULL,
+  parent    INT                                                NOT NULL,
+  created   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  post_path INT[]                    DEFAULT '{}'::INT[]
 );
 
 ALTER TABLE public.post
@@ -233,6 +233,19 @@ CREATE TRIGGER update_post
   ON post
   FOR EACH ROW
 EXECUTE PROCEDURE update_post_quantity();
+
+CREATE TYPE public.type_post AS
+  (
+  id BIGINT,
+  author citext,
+  thread INT,
+  forum citext,
+  message text,
+  is_edited BOOLEAN,
+  parent INT,
+  created TIMESTAMP WITH TIME ZONE,
+  post_path INT[]
+  );
 
 INSERT INTO public."post" (id, author, thread, forum, parent)
 VALUES (0, 'admin', '1', 'admin', 0);
@@ -405,7 +418,7 @@ $BODY$
   LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION func_create_thread(arg_author citext, arg_created TIMESTAMP WITH TIME ZONE, arg_forum citext,
- arg_message text, arg_slug citext, arg_title text)
+                                              arg_message text, arg_slug citext, arg_title text)
   RETURNS public.type_thread
 AS
 $BODY$
@@ -451,22 +464,24 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION func_get_threads(arg_slug citext, arg_since TIMESTAMP WITH TIME ZONE, arg_desc BOOLEAN, arg_limit INT)
+CREATE OR REPLACE FUNCTION func_get_threads(arg_slug citext, arg_since TIMESTAMP WITH TIME ZONE, arg_desc BOOLEAN,
+                                            arg_limit INT)
   RETURNS SETOF public.type_thread
 AS
 $BODY$
 DECLARE
   result public.type_thread;
-  rec RECORD;
+  rec    RECORD;
 BEGIN
   PERFORM func_get_forum(arg_slug);
-  FOR rec IN SELECT * FROM public.thread
-             WHERE created >= arg_since AND forum = arg_slug
-             ORDER BY
-               (CASE WHEN arg_desc THEN created END) DESC,
-               (CASE WHEN NOT arg_desc THEN created END) ASC
+  FOR rec IN SELECT *
+             FROM public.thread
+             WHERE created >= arg_since
+               AND forum = arg_slug
+             ORDER BY (CASE WHEN arg_desc THEN created END) DESC,
+                      (CASE WHEN NOT arg_desc THEN created END) ASC
              LIMIT arg_limit
-  LOOP
+    LOOP
       result.is_new := false;
       result.id := rec.id;
       result.slug := rec.slug;
@@ -477,7 +492,7 @@ BEGIN
       result.votes := rec.votes;
       result.created := rec.created;
       RETURN next result;
-  END LOOP;
+    END LOOP;
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -488,18 +503,19 @@ AS
 $BODY$
 DECLARE
   result public.type_person;
-  rec RECORD;
+  rec    RECORD;
 BEGIN
   PERFORM func_get_forum(arg_slug);
-  FOR rec IN SELECT * FROM public.person
+  FOR rec IN SELECT *
+             FROM public.person
              WHERE nickname IN (SELECT user_nickname
-                                FROM  public.forum_users
-                                WHERE forum_slug = arg_slug) AND id < arg_since
-             ORDER BY
-               (CASE WHEN arg_desc THEN id END) DESC,
-               (CASE WHEN NOT arg_desc THEN id END) ASC
+                                FROM public.forum_users
+                                WHERE forum_slug = arg_slug)
+               AND id < arg_since
+             ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
+                      (CASE WHEN NOT arg_desc THEN id END) ASC
              LIMIT arg_limit
-    LOOP
+  LOOP
       result.is_new := false;
       result.id := rec.id;
       result.nickname := rec.nickname;
@@ -507,7 +523,116 @@ BEGIN
       result.fullname := rec.fullname;
       result.about := rec.about;
       RETURN next result;
-    END LOOP;
+  END LOOP;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_thread(arg_slug citext, arg_id INT)
+  RETURNS public.type_thread
+AS
+$BODY$
+DECLARE
+  result public.type_thread;
+BEGIN
+  SELECT * INTO result.id, result.slug, result.author, result.forum,
+    result.title, result.message, result.votes, result.created
+  FROM public.thread
+  WHERE slug = arg_slug
+     OR id = arg_id;
+  result.is_new := FALSE;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+--TODO исправить эту функцию, зацикливается
+CREATE OR REPLACE FUNCTION func_create_posts(arg_slug citext, arg_id INT, arg_authors citext[], arg_messages text[],
+                                                                arg_parents INT[], arg_len INT)
+  RETURNS SETOF public.type_post
+AS
+$BODY$
+DECLARE
+  result     public.type_post;
+  forum_slug citext;
+  thread     INT;
+  author     citext;
+  parent     int;
+  message    text;
+  i          INTEGER;
+BEGIN
+  SELECT forum, id INTO forum_slug, thread
+  FROM public.thread
+  WHERE slug = arg_slug
+     OR id = arg_id;
+  IF NOT found THEN
+    RAISE no_data_found;
+  END IF;
+  IF arg_len IS NULL THEN
+    RETURN;
+  END IF;
+  i := 1;
+  LOOP
+    EXIT WHEN i > arg_len;
+    author := arg_authors[i];
+    message := arg_messages[i];
+    parent := arg_parents[i];
+    INSERT INTO public.post (author, thread, forum, message, parent)
+    VALUES (author, thread, forum_slug, message, parent) RETURNING *
+      INTO result.id, result.author, result.thread, result.forum,
+        result.message, result.is_edited, result.parent, result.created, result.post_path;
+    RETURN NEXT result;
+    i := i + 1;
+  END LOOP;
+EXCEPTION
+  WHEN foreign_key_violation THEN
+    RAISE foreign_key_violation;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_update_thread(arg_message text, arg_title text, arg_slug citext, arg_id INT)
+  RETURNS public.type_thread
+AS
+$BODY$
+DECLARE
+  result public.type_thread;
+BEGIN
+  UPDATE public.thread
+  SET message    = arg_message,
+      title = arg_title
+  WHERE slug = arg_slug OR id = arg_id RETURNING *
+    INTO result.id, result.slug, result.author, result.forum,
+      result.title, result.message, result.votes, result.created;
+  result.is_new := FALSE;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_create_or_update_vote(arg_message text, arg_title text, arg_slug citext, arg_id INT)
+  RETURNS public.type_thread
+AS
+$BODY$
+DECLARE
+  result public.type_thread;
+BEGIN
+  INSERT INTO public.vote (thread_slug, user_nickname, voice)
+  VALUES ($1, $2, $3)
+  ON CONFLICT ON CONSTRAINT vote_pk DO UPDATE
+    SET voice = $3
+    WHERE vote.thread_slug = $1 AND vote.user_nickname = $2
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  RETURN result;
 END;
 $BODY$
   LANGUAGE plpgsql;

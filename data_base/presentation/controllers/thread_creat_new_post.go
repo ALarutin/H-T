@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/lib/pq"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -35,7 +34,7 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts := make([]models.Post, 0)
+	posts := make([]models.PostInput, 0)
 	err = json.Unmarshal(body, &posts)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -43,48 +42,59 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ps := make([]models.Post, 0)
-	for _, post := range posts {
+	var authors []string
+	var messages []string
+	var parents []int
 
-		p, err := models.GetInstance().CreatePost(post, slug, id)
-		if pqErr, ok := err.(*pq.Error); ok {
+	for _, post := range posts{
+		authors = append(authors, post.Author)
+		messages = append(messages, post.Message)
+		parents = append(parents, post.Parent)
+	}
+	len := len(posts)
 
-			if pqErr.Code.Class() == errorUniqueViolation{
+	logger.Info.Print("//////////////////////")
+	logger.Info.Print(authors)
+	logger.Info.Print(messages)
+	logger.Info.Print(parents)
 
-				if pqErr.Constraint == postParentForeignKey || pqErr.Constraint == postAuthorForeignKey {
-					myJSON := fmt.Sprintf(`{"%s%s%v or %s%s"}`,
-						messageCantFind, cantFindParent, post.Parent, cantFindUser, post.Author)
-					w.WriteHeader(http.StatusConflict)
-					_, err = w.Write([]byte(myJSON))
-					if err != nil {
-						w.WriteHeader(http.StatusInternalServerError)
-						logger.Error.Println(err.Error())
-						return
-					}
-					return
-				}
+	p, err := models.GetInstance().CreatePost(authors, messages, parents, slug, id, len)
+	logger.Info.Print("//////////////////////")
+	logger.Error.Print(p)
+	logger.Error.Print(err)
+	if err != nil {
 
-				if pqErr.Constraint == "" {
-					myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
-					w.WriteHeader(http.StatusNotFound)
-					_, err = w.Write([]byte(myJSON))
-					if err != nil {
-						w.WriteHeader(http.StatusInternalServerError)
-						logger.Error.Println(err.Error())
-						return
-					}
-					return
-				}
+		if err.Error() == postParentForeignKey {
+			myJSON := fmt.Sprintf(`{"%s%sor%s"}`,
+				messageCantFind, cantFindParent, cantFindUser)
+			w.WriteHeader(http.StatusConflict)
+			_, err = w.Write([]byte(myJSON))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logger.Error.Println(err.Error())
+				return
 			}
-
-			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(err.Error())
 			return
 		}
-		ps = append(ps, p)
+
+		if err.Error() == errorSqlNoRows{
+			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
+			w.WriteHeader(http.StatusNotFound)
+			_, err = w.Write([]byte(myJSON))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logger.Error.Println(err.Error())
+				return
+			}
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
 	}
 
-	data, err := json.Marshal(ps)
+	data, err := json.Marshal(p)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
