@@ -39,7 +39,7 @@ func GetThreadsHandler(w http.ResponseWriter, r *http.Request) {
 
 	threads, err := models.GetInstance().GetThreads(slug, since, descBool, limitInt)
 	if err != nil {
-		if err.Error() == errorSqlNoRows {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindForum, slug)
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(myJSON))

@@ -273,7 +273,7 @@ CREATE OR REPLACE FUNCTION update_votes()
 $BODY$
 BEGIN
   UPDATE public."thread"
-  SET votes = votes + New."voice"
+  SET votes = votes + 1
   WHERE "slug" = NEW."thread_slug";
   RETURN NULL;
 END;
@@ -282,7 +282,7 @@ $BODY$
 
 CREATE TRIGGER update_thread_votes
   AFTER INSERT
-  on vote
+  ON vote
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();
 
@@ -617,18 +617,51 @@ $BODY$
   LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION func_create_or_update_vote(arg_message text, arg_title text, arg_slug citext, arg_id INT)
+CREATE OR REPLACE FUNCTION func_create_or_update_vote(arg_user citext, arg_slug citext, arg_id INT, arg_vote INT)
   RETURNS public.type_thread
 AS
 $BODY$
 DECLARE
   result public.type_thread;
 BEGIN
+  SELECT slug INTO result.slug
+  FROM public.thread
+    WHERE slug = arg_slug OR id = arg_id;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
   INSERT INTO public.vote (thread_slug, user_nickname, voice)
-  VALUES ($1, $2, $3)
+  VALUES (result.slug, arg_user, arg_vote)
   ON CONFLICT ON CONSTRAINT vote_pk DO UPDATE
-    SET voice = $3
-    WHERE vote.thread_slug = $1 AND vote.user_nickname = $2
+    SET voice = arg_vote
+    WHERE vote.thread_slug = result.slug AND vote.user_nickname = arg_user;
+  SELECT * INTO result.id, result.slug, result.author, result.forum,
+    result.title, result.message, result.votes, result.created
+  FROM public.thread
+  WHERE slug = result.slug;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  result.is_new := FALSE;
+  RETURN result;
+EXCEPTION
+  WHEN foreign_key_violation THEN
+    RAISE no_data_found;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_update_post(arg_message text, arg_id INT)
+  RETURNS public.type_post
+AS
+$BODY$
+DECLARE
+  result public.type_post;
+BEGIN
+  UPDATE public."post"
+  SET message = arg_message, is_edited = TRUE
+  WHERE id = $2 RETURNING * INTO result.id, result.author, result.thread, result.forum,
+    result.message, result.is_edited, result.parent, result.created, result.post_path;
   IF NOT FOUND THEN
     RAISE no_data_found;
   END IF;

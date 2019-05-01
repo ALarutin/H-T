@@ -39,7 +39,6 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if users[0].IsNew == true {
-
 		data, err := json.Marshal(users[0])
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)

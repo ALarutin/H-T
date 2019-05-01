@@ -46,7 +46,7 @@ func CreateBranchHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, err := models.GetInstance().CreateThread(thread)
 	if err != nil {
-		if err.Error() == errorSqlNoRows {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s or %s%s"}`,
 				messageCantFind, cantFindUser, thread.Author, cantFindForum, thread.Forum)
 			w.WriteHeader(http.StatusNotFound)

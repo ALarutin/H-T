@@ -63,7 +63,6 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Error.Print(p)
 	logger.Error.Print(err)
 	if err != nil {
-
 		if err.Error() == postParentForeignKey {
 			myJSON := fmt.Sprintf(`{"%s%sor%s"}`,
 				messageCantFind, cantFindParent, cantFindUser)
@@ -77,7 +76,7 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err.Error() == errorSqlNoRows{
+		if err.Error() == errorPqNoDataFound{
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
 			w.WriteHeader(http.StatusNotFound)
 			_, err = w.Write([]byte(myJSON))
@@ -88,7 +87,6 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

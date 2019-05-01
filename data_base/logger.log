@@ -1,37 +1,14 @@
-INFO: 2019/05/01 17:48:48 db.go:44: 
+INFO: 2019/05/01 19:00:56 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/05/01 17:48:48 main.go:14: 
+INFO: 2019/05/01 19:00:56 main.go:14: 
 Started listening at: 5000
-ERROR: 2019/05/01 17:48:51 thread_update_branch.go:47: pq: column "arg_about" does not exist
-INFO: 2019/05/01 17:48:51 middleware.go:21: 
+INFO: 2019/05/01 19:01:00 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:52449
-path: /thread/2/details
-start time: 6.842342ms
-INFO: 2019/05/01 17:50:23 middleware.go:21: 
+addr: 127.0.0.1:49660
+path: /post/0/details
+start time: 7.062815ms
+INFO: 2019/05/01 19:01:10 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:52449
-path: /thread/2/details
-start time: 12.178663ms
-INFO: 2019/05/01 17:50:34 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:52449
-path: /thread/2/details
-start time: 4.19449ms
-INFO: 2019/05/01 17:50:39 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:52449
-path: /thread/299/details
-start time: 5.522346ms
-ERROR: 2019/05/01 17:50:44 thread_update_branch.go:26: strconv.Atoi: parsing "admin": invalid syntax
-INFO: 2019/05/01 17:50:44 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:52449
-path: /thread/admin/details
-start time: 10.046814ms
-ERROR: 2019/05/01 17:50:48 thread_update_branch.go:26: strconv.Atoi: parsing "admfffin": invalid syntax
-INFO: 2019/05/01 17:50:48 middleware.go:21: 
-method: [POST]
-addr: 127.0.0.1:52449
-path: /thread/admfffin/details
-start time: 3.970026ms
+addr: 127.0.0.1:49660
+path: /post/0/details
+start time: 11.204242ms

@@ -46,7 +46,7 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 	users, err := models.GetInstance().GetUsers(slug, sinceInt, descBool, limitInt)
 	if err != nil {
-		if err.Error() == errorSqlNoRows {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindForum, slug)
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(myJSON))

@@ -23,29 +23,8 @@ func VoteThreadHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(slug)
 	if err != nil {
 		id = 0
-		logger.Error.Println(err.Error())
 	} else{
 		slug = ""
-	}
- 	logger.Error.Print(slug)
-
-	thread, err := models.GetInstance().GetThread(slug, id)
-	if err != nil  {
-		if err.Error() == errorSqlNoRows{
-			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
-			w.WriteHeader(http.StatusNotFound)
-			_, err = w.Write([]byte(myJSON))
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				logger.Error.Println(err.Error())
-				return
-			}
-			return
-		}
-
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
 	}
 
 	var vote models.Vote
@@ -58,19 +37,22 @@ func VoteThreadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vote.ThreadSlug = thread.Slug
 	vote.Nickname = nickname
 	vote.Voice = i
 
-	err = models.GetInstance().CreateOrUpdateVote(vote)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-
-	thread, err = models.GetInstance().GetThread(slug, id)
+	thread, err := models.GetInstance().CreateOrUpdateVote(vote, slug, id)
 	if err != nil  {
+		if err.Error() == errorPqNoDataFound{
+			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
+			w.WriteHeader(http.StatusNotFound)
+			_, err = w.Write([]byte(myJSON))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logger.Error.Println(err.Error())
+				return
+			}
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

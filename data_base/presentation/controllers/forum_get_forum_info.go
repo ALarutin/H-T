@@ -23,7 +23,7 @@ func GetForumInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	forum, err := models.GetInstance().GetForum(slug)
 	if err != nil {
-		if err.Error() == errorSqlNoRows {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindForum, slug)
 			w.WriteHeader(http.StatusNotFound)
 			_, err = w.Write([]byte(myJSON))

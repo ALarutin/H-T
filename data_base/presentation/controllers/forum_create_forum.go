@@ -25,7 +25,7 @@ func CreateForumHandler(w http.ResponseWriter, r *http.Request) {
 
 	f, err := models.GetInstance().CreateForum(forum)
 	if err != nil {
-		if err.Error() == errorSqlNoRows {
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindUser, forum.User)
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(myJSON))

@@ -12,7 +12,7 @@ const (
 
 const (
 	errorUniqueViolation       = `pq: unique_violation`
-	errorSqlNoRows             = `pq: no_data_found`
+	errorPqNoDataFound            = `pq: no_data_found`
 )
 
 const (

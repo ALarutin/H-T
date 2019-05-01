@@ -35,11 +35,8 @@ func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	u, err := models.GetInstance().UpdateUser(user)
 	if err != nil {
-
 		if err.Error() == errorUniqueViolation {
-
 			myJSON := fmt.Sprintf(`{"message": "%s%s"}`, user.Email, emailUsed)
-
 			w.WriteHeader(http.StatusConflict)
 			_, err := w.Write([]byte(myJSON))
 			if err != nil {
@@ -49,11 +46,8 @@ func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-
-		if err.Error() == errorSqlNoRows {
-
+		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindUser, nickname)
-
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(myJSON))
 			if err != nil {
@@ -62,7 +56,6 @@ func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

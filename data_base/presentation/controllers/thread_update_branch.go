@@ -31,7 +31,7 @@ func UpdateBranchHandler(w http.ResponseWriter, r *http.Request) {
 
 	thread, err := models.GetInstance().UpdateThread(message, title, slug, id)
 	if err != nil  {
-		if err.Error() == errorSqlNoRows{
+		if err.Error() == errorPqNoDataFound{
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
 			w.WriteHeader(http.StatusNotFound)
 			_, err = w.Write([]byte(myJSON))
@@ -42,7 +42,6 @@ func UpdateBranchHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return

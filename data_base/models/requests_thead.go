@@ -48,16 +48,9 @@ func (db *dbManager) UpdateThread(message string, title string, slug string, thr
 	return
 }
 
-func (db *dbManager) CreateOrUpdateVote(vote Vote) (thread Thread, err error) {
-	//row := db.dataBase.QueryRow(
-	//	`INSERT INTO public."vote" (thread_slug, user_nickname, voice)
-	//		VALUES ($1, $2, $3)
-	//		ON CONFLICT ON CONSTRAINT vote_pk DO UPDATE
-	//		  SET voice = $3
-	//		  WHERE vote.thread_slug = $1 AND vote.user_nickname = $2`,
-	//	vote.ThreadSlug, vote.Nickname, vote.Voice)
-	row := db.dataBase.QueryRow(`SELECT * FROM func_create_or_update_vote($1::citext, $2::INT, $3::citext, $4::INT)`,
-		vote.ThreadSlug, vote.Nickname, vote.Voice)
+func (db *dbManager) CreateOrUpdateVote(vote Vote, slug string, threadId int) (thread Thread, err error) {
+	row := db.dataBase.QueryRow(`SELECT * FROM func_create_or_update_vote($1::citext, $2::citext, $3::INT, $4::INT)`,
+		vote.Nickname, slug, threadId, vote.Voice)
 	err = row.Scan(&thread.IsNew, &thread.ID, &thread.Slug, &thread.Author, &thread.Forum, &thread.Title,
 		&thread.Message, &thread.Votes, &thread.Created)
 	return
