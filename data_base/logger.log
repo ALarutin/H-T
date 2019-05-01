@@ -1,14 +1,29 @@
-INFO: 2019/05/01 19:00:56 db.go:44: 
+INFO: 2019/05/01 21:08:03 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/05/01 19:00:56 main.go:14: 
+INFO: 2019/05/01 21:08:03 main.go:14: 
 Started listening at: 5000
-INFO: 2019/05/01 19:01:00 middleware.go:21: 
+INFO: 2019/05/01 21:08:07 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:49660
-path: /post/0/details
-start time: 7.062815ms
-INFO: 2019/05/01 19:01:10 middleware.go:21: 
+addr: 127.0.0.1:50523
+path: /thread/2/create
+start time: 7.777287ms
+INFO: 2019/05/01 21:08:10 middleware.go:21: 
 method: [POST]
-addr: 127.0.0.1:49660
-path: /post/0/details
-start time: 11.204242ms
+addr: 127.0.0.1:50523
+path: /thread/2/create
+start time: 1.760924ms
+INFO: 2019/05/01 21:08:17 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:50523
+path: /thread/2/create
+start time: 1.053603ms
+INFO: 2019/05/01 21:08:21 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:50523
+path: /thread/2/create
+start time: 5.1504ms
+INFO: 2019/05/01 21:08:29 middleware.go:21: 
+method: [POST]
+addr: 127.0.0.1:50523
+path: /thread/2/create
+start time: 11.419579ms

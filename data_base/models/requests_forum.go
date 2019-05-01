@@ -17,7 +17,6 @@ func (db *dbManager) CreateThread(thread Thread) (t Thread, err error) {
 }
 
 func (db *dbManager) GetForum(slug string) (forum Forum, err error) {
-
 	row := db.dataBase.QueryRow(`SELECT * FROM func_get_forum($1::citext)`, slug)
 	err = row.Scan(&forum.IsNew, &forum.ID, &forum.Slug, &forum.User, &forum.Title, &forum.Posts, &forum.Threads)
 	return

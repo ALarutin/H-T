@@ -1,5 +1,12 @@
 package models
 
+type Database struct {
+	Forum  int `json:"forum"`
+	Post   int `json:"post"`
+	Thread int `json:"thread"`
+	User   int `json:"user"`
+}
+
 type User struct {
 	IsNew    bool   `json:"-"`
 	ID       int    `json:"-"`
@@ -43,10 +50,11 @@ type Post struct {
 	Path     []int  `json:"-"`
 }
 
-type PostInput struct{
-	Author   string `sql:"author"`
-	Message  string `sql:"message"`
-	Parent   int    `sql:"parent"`
+type PostInfo struct {
+	Person *User   `json:"author,omitempty"`
+	Forum  *Forum  `json:"forum,omitempty"`
+	Post   Post    `json:"post"`
+	Thread *Thread `json:"thread,omitempty"`
 }
 
 type Vote struct {

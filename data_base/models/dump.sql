@@ -286,6 +286,14 @@ CREATE TRIGGER update_thread_votes
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();
 
+CREATE TYPE public.type_database AS
+  (
+  forum INT,
+  post INT,
+  thread INT,
+  person INT
+  );
+
 CREATE OR REPLACE FUNCTION add_admin()
   RETURNS VOID AS
 $BODY$
@@ -302,7 +310,7 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION clear_database()
+CREATE OR REPLACE FUNCTION func_clear_database()
   RETURNS VOID AS
 $BODY$
 BEGIN
@@ -313,6 +321,21 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION func_get_database()
+  RETURNS public.type_database
+AS
+$BODY$
+DECLARE
+  result public.type_database;
+BEGIN
+  SELECT count(*) INTO result.person FROM public.person;
+  SELECT count(*) INTO result.forum FROM public.forum;
+  SELECT count(*) INTO result.thread FROM public.thread;
+  SELECT count(*) INTO result.post FROM public.post;
+  RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION func_create_user(arg_nickname citext, arg_email citext, arg_fullname text, arg_about text)
   RETURNS SETOF public.type_person
@@ -515,7 +538,7 @@ BEGIN
              ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
                       (CASE WHEN NOT arg_desc THEN id END) ASC
              LIMIT arg_limit
-  LOOP
+    LOOP
       result.is_new := false;
       result.id := rec.id;
       result.nickname := rec.nickname;
@@ -523,7 +546,7 @@ BEGIN
       result.fullname := rec.fullname;
       result.about := rec.about;
       RETURN next result;
-  END LOOP;
+    END LOOP;
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -549,44 +572,19 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
---TODO исправить эту функцию, зацикливается
-CREATE OR REPLACE FUNCTION func_create_posts(arg_slug citext, arg_id INT, arg_authors citext[], arg_messages text[],
-                                                                arg_parents INT[], arg_len INT)
-  RETURNS SETOF public.type_post
+CREATE OR REPLACE FUNCTION func_create_post(arg_author citext, arg_id INT, arg_message text, arg_parent INT,
+                                             arg_forum citext)
+  RETURNS public.type_post
 AS
 $BODY$
 DECLARE
-  result     public.type_post;
-  forum_slug citext;
-  thread     INT;
-  author     citext;
-  parent     int;
-  message    text;
-  i          INTEGER;
+  result public.type_post;
 BEGIN
-  SELECT forum, id INTO forum_slug, thread
-  FROM public.thread
-  WHERE slug = arg_slug
-     OR id = arg_id;
-  IF NOT found THEN
-    RAISE no_data_found;
-  END IF;
-  IF arg_len IS NULL THEN
-    RETURN;
-  END IF;
-  i := 1;
-  LOOP
-    EXIT WHEN i > arg_len;
-    author := arg_authors[i];
-    message := arg_messages[i];
-    parent := arg_parents[i];
-    INSERT INTO public.post (author, thread, forum, message, parent)
-    VALUES (author, thread, forum_slug, message, parent) RETURNING *
-      INTO result.id, result.author, result.thread, result.forum,
-        result.message, result.is_edited, result.parent, result.created, result.post_path;
-    RETURN NEXT result;
-    i := i + 1;
-  END LOOP;
+  INSERT INTO public.post(author, thread, forum, message, parent)
+  VALUES (arg_author, arg_id, arg_forum, arg_message, arg_parent) RETURNING *
+  INTO result.id, result.author, result.thread, result.forum,
+    result.message, result.is_edited, result.parent, result.created, result.post_path;
+    RETURN result;
 EXCEPTION
   WHEN foreign_key_violation THEN
     RAISE foreign_key_violation;
@@ -602,9 +600,10 @@ DECLARE
   result public.type_thread;
 BEGIN
   UPDATE public.thread
-  SET message    = arg_message,
-      title = arg_title
-  WHERE slug = arg_slug OR id = arg_id RETURNING *
+  SET message = arg_message,
+      title   = arg_title
+  WHERE slug = arg_slug
+     OR id = arg_id RETURNING *
     INTO result.id, result.slug, result.author, result.forum,
       result.title, result.message, result.votes, result.created;
   result.is_new := FALSE;
@@ -626,7 +625,8 @@ DECLARE
 BEGIN
   SELECT slug INTO result.slug
   FROM public.thread
-    WHERE slug = arg_slug OR id = arg_id;
+  WHERE slug = arg_slug
+     OR id = arg_id;
   IF NOT FOUND THEN
     RAISE no_data_found;
   END IF;
@@ -659,9 +659,29 @@ DECLARE
   result public.type_post;
 BEGIN
   UPDATE public."post"
-  SET message = arg_message, is_edited = TRUE
+  SET message   = arg_message,
+      is_edited = TRUE
   WHERE id = $2 RETURNING * INTO result.id, result.author, result.thread, result.forum,
     result.message, result.is_edited, result.parent, result.created, result.post_path;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  RETURN result;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_post(arg_id INT)
+  RETURNS public.type_post
+AS
+$BODY$
+DECLARE
+  result public.type_post;
+BEGIN
+  SELECT * INTO result.id, result.author, result.thread, result.forum,
+    result.message, result.is_edited, result.parent, result.created, result.post_path
+  FROM public.post
+  WHERE id = arg_id;
   IF NOT FOUND THEN
     RAISE no_data_found;
   END IF;

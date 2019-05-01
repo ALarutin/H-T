@@ -82,13 +82,13 @@ func GetRouter() (router *mux.Router) {
 			Method:  http.MethodPost,
 			Handler: controllers.ChangeMessageHandler,
 		},
-	//	{
-	//		Info:    "Handler for getting information about the discussion thread.",
-	//		Name:    "post_GetThreadInfoPost",
-	//		Path:    "/{id}/details",
-	//		Method:  http.MethodGet,
-	//		Handler: controllers.GetThreadInfoPostHandler,
-	//	},
+		{
+			Info:    "Handler for getting information about the discussion thread.",
+			Name:    "post_GetThreadInfoPost",
+			Path:    "/{id}/details",
+			Method:  http.MethodGet,
+			Handler: controllers.GetThreadInfoPostHandler,
+		},
 	}
 
 	for _, r := range _post {
@@ -112,13 +112,13 @@ func GetRouter() (router *mux.Router) {
 			Method:  http.MethodPost,
 			Handler: controllers.ClearDataBaseHandler,
 		},
-	//	{
-	//		Info:    "Handler for obtaining information about the database.",
-	//		Name:    "service_GetDataBaseInfo",
-	//		Path:    "/status",
-	//		Method:  http.MethodGet,
-	//		Handler: controllers.GetDataBaseInfoHandler,
-	//	},
+		{
+			Info:    "Handler for obtaining information about the database.",
+			Name:    "service_GetDataBaseInfo",
+			Path:    "/status",
+			Method:  http.MethodGet,
+			Handler: controllers.GetDataBaseInfoHandler,
+		},
 	}
 
 	for _, r := range _service {

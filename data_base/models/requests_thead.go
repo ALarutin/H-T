@@ -1,35 +1,19 @@
 package models
 
-import (
-	"data_base/presentation/logger"
-	"github.com/lib/pq"
-)
+import "github.com/lib/pq"
 
-func (db *dbManager) CreatePost(authors []string, messages []string, parents []int, slug string, threadId int, len int) (ps []Post, err error) {
+func (db *dbManager) CreatePost(post Post, id int, forum string) (p Post, err error) {
 
 	//row := db.dataBase.QueryRow(
 	//	`INSERT INTO public."post" (author, thread, forum, message, parent)
 	//	VALUES ($1, (SELECT id FROM public."thread" WHERE slug = $2 OR id = $3), (SELECT forum FROM public."thread" WHERE slug = $2 OR id = $3), $4, $5)
 	//	RETURNING id, created, thread, forum`,
 	//	post.Author, slug, threadId, post.Message, post.Parent)
-	logger.Info.Print("//////////////////////")
-	rows, err := db.dataBase.Query(`SELECT * FROM func_create_posts($1::citext, $2::INT, $3::citext[], $4::text[], $5::INT[], $6::INT)`,
-		slug, threadId, pq.Array(authors), pq.Array(messages), pq.Array(parents), len)
-	if err != nil {
-		return
-	}
-	defer rows.Close()
-	logger.Info.Print("//////////////////////")
-	logger.Error.Print(rows)
-	var post Post
-	for rows.Next() {
-		err = rows.Scan(&post.ID, &post.Author, &post.Thread, &post.Forum,
-			&post.Message, &post.IsEdited, &post.Parent, &post.Created, &post.Path)
-		if err != nil {
-			return
-		}
-		ps = append(ps, post)
-	}
+
+	row := db.dataBase.QueryRow(`SELECT * FROM func_create_post($1::citext, $2::INT, $3::text, $4::INT, $5::citext)`,
+		post.Author, id, post.Message,  post.Parent, forum)
+	err = row.Scan(&p.ID, &p.Author, &p.Thread, &p.Forum,
+		&p.Message, &p.IsEdited, &p.Parent, &p.Created, pq.Array(&p.Path))
 	return
 }
 
