@@ -3,7 +3,6 @@ package controllers
 import (
 	"data_base/models"
 	"data_base/presentation/logger"
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -21,30 +20,28 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit := r.URL.Query().Get("limit")
-	limitInt, err := strconv.Atoi(limit)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-
 	since := r.URL.Query().Get("since")
-	sinceInt, err := strconv.Atoi(since)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
+	var sinceInt int
+	if since == "" {
+		sinceInt = 0
+	} else {
+		sinceInt, err := strconv.Atoi(limit)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
 
+		}
+	}
 	desc := r.URL.Query().Get("desc")
-	var descBool bool
-	if desc == "true" {
-		descBool = true
-	} else if desc == "false" {
-		descBool = false
-	}
 
-	users, err := models.GetInstance().GetUsers(slug, sinceInt, descBool, limitInt)
+	logger.Debug.Print(slug)
+	logger.Debug.Print(limit)
+	logger.Debug.Print(since)
+	logger.Debug.Print(sinceInt)
+	logger.Debug.Print(desc)
+
+	users, err := models.GetInstance().GetUsers(slug, sinceInt, desc, limitInt)
 	if err != nil {
 		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindForum, slug)

@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func CreateBranchHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,29 +22,33 @@ func CreateBranchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	nickname := r.PostFormValue("author")
-
-	slugBody := r.PostFormValue("slug")
-	if len(slugBody) == 0 {
-		title := r.PostFormValue("title")
-		slugBody = strings.Replace(strings.ToLower(title), " ", "_", -1)
-	}
-
 	var thread models.Thread
 
-	thread.Author = nickname
-	thread.Created = r.PostFormValue("created")
+	err = json.Unmarshal(body, &thread)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), `parsing time "{}"`){
+			thread.Created = time.Time{}
+		} else{
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
+	}
+
+	var slugIsEmpty bool
+	if len(thread.Slug) == 0 {
+		slugIsEmpty = true
+		thread.Slug = strings.Replace(strings.ToLower(thread.Title), " ", "_", -1)
+	}
+
 	thread.Forum = slugUrl
-	thread.Message = r.PostFormValue("message")
-	thread.Title = r.PostFormValue("title")
-	thread.Slug = slugBody
 
 	t, err := models.GetInstance().CreateThread(thread)
 	if err != nil {
@@ -61,6 +67,10 @@ func CreateBranchHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
+	}
+
+	if slugIsEmpty{
+		t.Slug = ""
 	}
 
 	data, err := json.Marshal(t)

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -22,14 +23,27 @@ func UpdateBranchHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(slug)
 	if err != nil {
-		id = 0
-		logger.Error.Println(err.Error())
+		id = -1
+	} else {
+		slug = ""
 	}
 
-	message := r.PostFormValue("message")
-	title := r.PostFormValue("title")
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
 
-	thread, err := models.GetInstance().UpdateThread(message, title, slug, id)
+	var thread models.Thread
+	err = json.Unmarshal(body, &thread)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
+
+	thread, err = models.GetInstance().UpdateThread(thread.Message, thread.Title, slug, id)
 	if err != nil {
 		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)

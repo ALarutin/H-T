@@ -58,14 +58,14 @@ ALTER TABLE ONLY public.forum_users
 -- table thread
 CREATE TABLE thread
 (
-  id      SERIAL                                             NOT NULL,
-  slug    citext                                             NOT NULL,
-  author  citext                                             NOT NULL,
-  forum   citext                                             NOT NULL,
-  title   text                     DEFAULT ''                NOT NULL,
-  message text                     DEFAULT ''                NOT NULL,
-  votes   INT                      DEFAULT 0                 NOT NULL,
-  created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+  id      SERIAL                   NOT NULL,
+  slug    citext                   NOT NULL,
+  author  citext                   NOT NULL,
+  forum   citext                   NOT NULL,
+  title   text DEFAULT ''          NOT NULL,
+  message text DEFAULT ''          NOT NULL,
+  votes   INT  DEFAULT 0           NOT NULL,
+  created TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE UNIQUE INDEX thread_id_ui
@@ -244,20 +244,40 @@ CREATE TRIGGER update_post_path
   FOR EACH ROW
 EXECUTE PROCEDURE update_post_path();
 
-CREATE OR REPLACE FUNCTION update_votes()
+CREATE OR REPLACE FUNCTION insert_votes()
   RETURNS trigger AS
 $BODY$
 BEGIN
   UPDATE public."thread"
-  SET votes = votes + 1
+  SET votes = votes + New."voice"
   WHERE "slug" = NEW."thread_slug";
   RETURN NULL;
 END;
 $BODY$
   LANGUAGE plpgsql;
 
-CREATE TRIGGER update_thread_votes
+CREATE TRIGGER insert_thread_votes
   AFTER INSERT
+  ON vote
+  FOR EACH ROW
+EXECUTE PROCEDURE insert_votes();
+
+CREATE OR REPLACE FUNCTION update_votes()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  IF (OLD.voice != NEW.voice) THEN
+    UPDATE public."thread"
+    SET votes = votes + 2 * New.voice
+    WHERE "slug" = NEW.thread_slug;
+  END IF;
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER update_thread_votes
+  AFTER UPDATE
   ON vote
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();
@@ -274,8 +294,8 @@ CREATE TYPE public.type_person AS
   id BIGINT,
   nickname citext,
   email citext,
-  about text,
-  fullname text
+  fullname text,
+  about text
   );
 
 CREATE TYPE public.type_forum AS
@@ -333,14 +353,14 @@ CREATE OR REPLACE FUNCTION func_add_admin()
   RETURNS VOID AS
 $BODY$
 BEGIN
-  INSERT INTO public."person" (email, about, fullname, nickname)
-  VALUES ('admin@admin.com', 'something', 'admin', 'admin');
-  INSERT INTO public."forum" (author, slug)
-  VALUES ('admin', 'admin');
-  INSERT INTO public."thread" (author, forum, slug)
-  VALUES ('admin', 'admin', 'admin');
-  INSERT INTO public."post" (id, author, thread, forum, parent)
-  VALUES (0, 'admin', '1', 'admin', 0);
+  INSERT INTO public."person" (id, email, about, fullname, nickname)
+  VALUES (0, 'admin@admin.com', 'something', 'admin', 'admin');
+  INSERT INTO public."forum" (id, author, slug)
+  VALUES (0, 'admin', 'admin');
+  INSERT INTO public."thread" (id, author, forum, slug, created)
+  VALUES (0, 'admin', 'admin', 'admin', '0001-01-01 00:00:00.000000 +00:00');
+  INSERT INTO public."post" (id, author, thread, forum, parent, created)
+  VALUES (0, 'admin', '0', 'admin', 0, '0001-01-01 00:00:00.000000 +00:00');
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -382,7 +402,7 @@ DECLARE
 BEGIN
   INSERT INTO person (nickname, email, fullname, about)
   VALUES (arg_nickname, arg_email, arg_fullname, arg_about) RETURNING *
-    INTO result.id, result.nickname, result.fullname, result.about, result.email;
+    INTO result.id, result.nickname, result.email, result.fullname, result.about;
   result.is_new := true;
   RETURN next result;
 EXCEPTION
@@ -411,7 +431,7 @@ $BODY$
 DECLARE
   result public.type_person;
 BEGIN
-  SELECT * INTO result.id, result.nickname, result.fullname, result.about, result.email
+  SELECT * INTO result.id, result.nickname, result.email, result.fullname, result.about
   FROM public.person
   WHERE nickname = arg_nickname;
   result.is_new := FALSE;
@@ -431,9 +451,15 @@ DECLARE
   result public.type_person;
 BEGIN
   UPDATE public.person
-  SET email    = arg_email,
-      fullname = arg_fullname,
-      about    = arg_about
+  SET email    = CASE
+                   WHEN arg_email != '' THEN arg_email
+                   ELSE email END,
+      fullname = CASE
+                   WHEN arg_fullname != '' THEN arg_fullname
+                   ELSE fullname END,
+      about    = CASE
+                   WHEN arg_about != '' THEN arg_about
+                   ELSE about END
   WHERE nickname = arg_nickname RETURNING *
     INTO result.id, result.nickname, result.email, result.fullname, result.about;
   result.is_new := FALSE;
@@ -453,10 +479,15 @@ CREATE OR REPLACE FUNCTION func_create_forum(arg_author citext, arg_slug citext,
 AS
 $BODY$
 DECLARE
-  result public.type_forum;
+  result       public.type_forum;
+  arg_nickname citext;
 BEGIN
+  SELECT nickname INTO arg_nickname FROM public.person WHERE nickname = arg_author;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
   INSERT INTO public.forum (slug, author, title)
-  VALUES (arg_slug, arg_author, arg_title) RETURNING *
+  VALUES (arg_slug, arg_nickname, arg_title) RETURNING *
     INTO result.id, result.slug, result.author, result.title, result.posts, result.threads;
   result.is_new := TRUE;
   RETURN result;
@@ -481,10 +512,15 @@ CREATE OR REPLACE FUNCTION func_create_thread(arg_author citext, arg_created TIM
 AS
 $BODY$
 DECLARE
-  result public.type_thread;
+  result         public.type_thread;
+  arg_slug_forum citext;
 BEGIN
+  SELECT slug INTO arg_slug_forum FROM public.forum WHERE slug = arg_forum;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
   INSERT INTO public.thread (slug, author, forum, title, message, created)
-  VALUES (arg_slug, arg_author, arg_forum, arg_title, arg_message, arg_created) RETURNING *
+  VALUES (arg_slug, arg_author, arg_slug_forum, arg_title, arg_message, arg_created) RETURNING *
     INTO result.id, result.slug, result.author, result.forum, result.title, result.message, result.votes, result.created;
   result.is_new := TRUE;
   RETURN result;
@@ -534,8 +570,11 @@ BEGIN
   PERFORM func_get_forum(arg_slug);
   FOR rec IN SELECT *
              FROM public.thread
-             WHERE created >= arg_since
-               AND forum = arg_slug
+             WHERE forum = arg_slug
+               AND CASE
+                     WHEN arg_since = '0001-01-01 00:00:00.000000 +00:00' THEN true
+                     WHEN arg_desc THEN created <= arg_since
+                     ELSE created >= arg_since END
              ORDER BY (CASE WHEN arg_desc THEN created END) DESC,
                       (CASE WHEN NOT arg_desc THEN created END) ASC
              LIMIT arg_limit
@@ -608,15 +647,15 @@ $BODY$
   LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION func_create_post(arg_author citext, arg_id INT, arg_message text, arg_parent INT,
-                                            arg_forum citext)
+                                            arg_forum citext, arg_created TIMESTAMP WITH TIME ZONE)
   RETURNS public.type_post
 AS
 $BODY$
 DECLARE
   result public.type_post;
 BEGIN
-  INSERT INTO public.post(author, thread, forum, message, parent)
-  VALUES (arg_author, arg_id, arg_forum, arg_message, arg_parent) RETURNING *
+  INSERT INTO public.post(author, thread, forum, message, parent, created)
+  VALUES (arg_author, arg_id, arg_forum, arg_message, arg_parent, arg_created) RETURNING *
     INTO result.id, result.author, result.thread, result.forum,
       result.message, result.is_edited, result.parent, result.created, result.post_path;
   RETURN result;
@@ -725,6 +764,50 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION func_get_posts(arg_slug citext, arg_id INT, arg_limit INT, arg_since INT,
+                                          arg_desc BOOLEAN)
+  RETURNS SETOF public.type_post
+AS
+$BODY$
+DECLARE
+  result        public.type_post;
+  arg_thread_id INT;
+  rec           RECORD;
+BEGIN
+  SELECT id INTO arg_thread_id
+  FROM public.thread
+  WHERE slug = arg_slug
+     OR id = arg_id;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  FOR rec IN SELECT *
+             FROM public.post
+             WHERE thread = arg_thread_id
+               AND CASE
+                     WHEN arg_since = '0' THEN TRUE
+                     WHEN arg_desc THEN id < arg_since
+                     ELSE id > arg_since END
+             ORDER BY (CASE WHEN arg_desc THEN created END) DESC,
+                      (CASE WHEN NOT arg_desc THEN created END) ASC,
+                      (CASE WHEN arg_desc THEN id END) DESC,
+                      (CASE WHEN NOT arg_desc THEN id END) ASC
+             LIMIT arg_limit
+    LOOP
+      result.id := rec.id;
+      result.author := rec.author;
+      result.thread := rec.thread;
+      result.forum := rec.forum;
+      result.message := rec.message;
+      result.is_edited := rec.is_edited;
+      result.parent := rec.parent;
+      result.created := rec.created;
+      RETURN next result;
+    END LOOP;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION func_get_posts_flat(arg_slug citext, arg_id INT, arg_limit INT, arg_since INT,
                                                arg_desc BOOLEAN)
   RETURNS SETOF public.type_post
@@ -745,7 +828,10 @@ BEGIN
   FOR rec IN SELECT *
              FROM public.post
              WHERE thread = arg_thread_id
-               AND id > arg_since
+               AND CASE
+                     WHEN arg_since = '0' THEN TRUE
+                     WHEN arg_desc THEN id < arg_since
+                     ELSE id > arg_since END
              ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
                       (CASE WHEN NOT arg_desc THEN id END) ASC
              LIMIT arg_limit
@@ -772,6 +858,7 @@ $BODY$
 DECLARE
   result        public.type_post;
   arg_thread_id INT;
+  root_path     INT[];
   rec           RECORD;
 BEGIN
   SELECT id INTO arg_thread_id
@@ -781,10 +868,14 @@ BEGIN
   IF NOT FOUND THEN
     RAISE no_data_found;
   END IF;
+  SELECT post_path INTO root_path FROM public.post WHERE id = arg_since;
   FOR rec IN SELECT *
              FROM public.post
              WHERE thread = arg_thread_id
-               AND id > arg_since
+               AND CASE
+                     WHEN arg_since = '0' THEN TRUE
+                     WHEN arg_desc THEN post_path < root_path
+                     ELSE post_path > root_path END
              ORDER BY (CASE WHEN arg_desc THEN post_path END) DESC,
                       (CASE WHEN NOT arg_desc THEN post_path END) ASC
              LIMIT arg_limit
@@ -823,18 +914,24 @@ BEGIN
     RAISE no_data_found;
   END IF;
   FOR rec IN
-    WITH parents AS (SELECT id as p_id
-                     FROM public.post
-                     WHERE thread = arg_thread_id
-                       AND id > arg_since
-                       AND parent = 0
-                     ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
-                              (CASE WHEN NOT arg_desc THEN id END) ASC
-                     LIMIT arg_limit)
+    WITH paths AS (SELECT post_path as path
+                   FROM public.post
+                   WHERE thread = arg_thread_id
+                     AND CASE
+                           WHEN arg_since = '0' THEN TRUE
+                           WHEN arg_desc THEN post_path[2] < (SELECT post_path[2] FROM public.post WHERE id = arg_since)
+                           ELSE post_path[2] > (SELECT post_path[2] FROM public.post WHERE id = arg_since) END)
       SELECT *
       FROM public.post
       WHERE thread = arg_thread_id
-        AND post_path [ 2] IN (SELECT p_id FROM parents)
+        AND post_path [ 2] IN (SELECT id
+                               FROM public.post
+                               WHERE thread = arg_thread_id
+                                 AND post_path IN (SELECT path FROM paths)
+                                 AND parent = 0
+                               ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
+                                        (CASE WHEN NOT arg_desc THEN id END) ASC
+                               LIMIT arg_limit)
       ORDER BY (CASE WHEN arg_desc THEN post_path [ 2] END) DESC, post_path,
                (CASE WHEN NOT arg_desc THEN post_path [ 2] END) ASC, post_path
     LOOP

@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Database struct {
 	Forum  int `json:"forum"`
 	Post   int `json:"post"`
@@ -27,26 +29,26 @@ type Forum struct {
 }
 
 type Thread struct {
-	IsNew   bool   `json:"-"`
-	Author  string `json:"author"`
-	Created string `json:"created"`
-	Forum   string `json:"forum"`
-	ID      int    `json:"id"`
-	Message string `json:"message"`
-	Slug    string `json:"slug"`
-	Title   string `json:"title"`
-	Votes   int    `json:"votes"`
+	IsNew   bool      `json:"-"`
+	Author  string    `json:"author"`
+	Created time.Time `json:"created,omitempty"`
+	Forum   string    `json:"forum"`
+	ID      int       `json:"id"`
+	Message string    `json:"message"`
+	Slug    string    `json:"slug,omitempty"`
+	Title   string    `json:"title"`
+	Votes   int       `json:"votes,omitempty"`
 }
 
 type Post struct {
-	Author   string `json:"author"`
-	Created  string `json:"created"`
-	Forum    string `json:"forum"`
-	ID       int    `json:"id"`
-	IsEdited bool   `json:"isEdited"`
-	Message  string `json:"message"`
-	Parent   int    `json:"parent"`
-	Thread   int    `json:"threads"`
+	Author   string    `json:"author"`
+	Created  time.Time `json:"created"`
+	Forum    string    `json:"forum"`
+	ID       int       `json:"id"`
+	IsEdited bool      `json:"isEdited,omitempty"`
+	Message  string    `json:"message"`
+	Parent   int       `json:"parent,omitempty"`
+	Thread   int       `json:"thread"`
 }
 
 type PostInfo struct {
@@ -58,6 +60,6 @@ type PostInfo struct {
 
 type Vote struct {
 	ThreadSlug string
-	Nickname   string
-	Voice      int
+	Nickname   string `json:"nickname"`
+	Voice      int `json:"voice"`
 }

@@ -2,14 +2,13 @@ package models
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
+	"time"
 )
 
-func (db *dbManager) CreatePost(post Post, id int, forum string) (p Post, err error) {
+func (db *dbManager) CreatePost(post Post, created time.Time, id int, forum string) (p Post, err error) {
 	row := db.dataBase.QueryRow(`SELECT id, author, thread, forum, message, is_edited, parent, created 
-										FROM func_create_post($1::citext, $2::INT, $3::text, $4::INT, $5::citext)`,
-		post.Author, id, post.Message, post.Parent, forum)
+										FROM func_create_post($1::citext, $2::INT, $3::text, $4::INT, $5::citext, $6::TIMESTAMP WITH TIME ZONE)`,
+		post.Author, id, post.Message, post.Parent, forum, created)
 	err = row.Scan(&p.ID, &p.Author, &p.Thread, &p.Forum,
 		&p.Message, &p.IsEdited, &p.Parent, &p.Created)
 	return
@@ -85,7 +84,13 @@ func getRowsForGetPosts(slug string, id int, limit int, since int, sort string, 
 			return
 		}
 	default:
-		err = errors.New(fmt.Sprintf("Wrong sort!"))
+		rows, err = db.dataBase.Query(
+			`SELECT id, author, thread, forum, message, is_edited, parent, created
+					FROM func_get_posts($1::citext, $2::INT, $3::INT, $4::INT, $5::BOOLEAN)`,
+			slug, id, limit, since, desc)
+		if err != nil {
+			return
+		}
 	}
 	return
 }

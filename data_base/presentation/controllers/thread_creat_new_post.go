@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,8 +24,9 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(slug)
 	if err != nil {
-		id = 0
-		logger.Error.Println(err.Error())
+		id = -1
+	} else {
+		slug = ""
 	}
 
 	thread, err := models.GetInstance().GetThread(slug, id)
@@ -60,9 +62,11 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	created := time.Now()
+
 	outPosts := make([]models.Post, 0)
 	for _, post := range inputPosts {
-		post, err = models.GetInstance().CreatePost(post, thread.ID, thread.Forum)
+		post, err = models.GetInstance().CreatePost(post, created, thread.ID, thread.Forum)
 		if err != nil {
 			if err.Error() == errorForeignKeyViolation {
 				myJSON := fmt.Sprintf(`{"%s%s"}`,

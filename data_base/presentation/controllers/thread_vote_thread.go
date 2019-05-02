@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -22,23 +23,26 @@ func VoteThreadHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(slug)
 	if err != nil {
-		id = 0
+		id = -1
 	} else {
 		slug = ""
 	}
 
-	var vote models.Vote
-	nickname := r.PostFormValue("nickname")
-	voice := r.PostFormValue("voice")
-	i, err := strconv.Atoi(voice)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	vote.Nickname = nickname
-	vote.Voice = i
+	var vote models.Vote
+
+	err = json.Unmarshal(body, &vote)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
 
 	thread, err := models.GetInstance().CreateOrUpdateVote(vote, slug, id)
 	if err != nil {

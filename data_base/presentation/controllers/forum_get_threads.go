@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func GetThreadsHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,12 +24,20 @@ func GetThreadsHandler(w http.ResponseWriter, r *http.Request) {
 	limit := r.URL.Query().Get("limit")
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
+		if err.Error() == `strconv.Atoi: parsing "": invalid syntax` {
+			limitInt = 100
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 	}
 
-	since := r.URL.Query().Get("since")
+	since, err := time.Parse(time.RFC3339, r.URL.Query().Get("since"))
+	if err != nil{
+		since = time.Time{}
+	}
+
 	desc := r.URL.Query().Get("desc")
 	var descBool bool
 	if desc == "true" {
@@ -55,26 +64,26 @@ func GetThreadsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := json.Marshal(threads)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
 	if len(threads) == 0 {
 		_, err = w.Write([]byte(`[]`))
-	}
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
+	}else {
+		data, err := json.Marshal(threads)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
+		_, err = w.Write(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 	}
 }

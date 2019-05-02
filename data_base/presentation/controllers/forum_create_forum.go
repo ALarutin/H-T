@@ -5,6 +5,7 @@ import (
 	"data_base/presentation/logger"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -17,11 +18,21 @@ func CreateForumHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
+
 	var forum models.Forum
 
-	forum.Slug = r.PostFormValue("slug")
-	forum.Title = r.PostFormValue("title")
-	forum.User = r.PostFormValue("user")
+	err = json.Unmarshal(body, &forum)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
 
 	f, err := models.GetInstance().CreateForum(forum)
 	if err != nil {

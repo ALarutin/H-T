@@ -5,12 +5,11 @@ import (
 	"data_base/presentation/logger"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 )
 
 func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
-
-	var user models.User
 
 	varMap := mux.Vars(r)
 	nickname, found := varMap["nickname"]
@@ -20,16 +19,21 @@ func CreatNewUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	user.About = r.PostFormValue("about")
-	user.Email = r.PostFormValue("email")
-	user.Fullname = r.PostFormValue("fullname")
+	var user models.User
+
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
 	user.Nickname = nickname
 
 	users, err := models.GetInstance().CreateUser(user)

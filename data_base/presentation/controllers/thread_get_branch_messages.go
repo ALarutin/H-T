@@ -21,24 +21,33 @@ func GetBranchMessagesHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(slug)
 	if err != nil {
-		id = 0
-		logger.Error.Println(err.Error())
+		id = -1
+	} else {
+		slug = ""
 	}
 
 	limit := r.URL.Query().Get("limit")
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
+		if err.Error() == `strconv.Atoi: parsing "": invalid syntax` {
+			limitInt = 100
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 	}
 
 	since := r.URL.Query().Get("since")
 	sinceInt, err := strconv.Atoi(since)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
+		if err.Error() == `strconv.Atoi: parsing "": invalid syntax` {
+			sinceInt = 0
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 	}
 
 	sort := r.URL.Query().Get("sort")
@@ -50,7 +59,7 @@ func GetBranchMessagesHandler(w http.ResponseWriter, r *http.Request) {
 		descBool = false
 	}
 
-	posts, err := models.GetInstance().GetPosts(slug, id, limitInt, sinceInt, sort,  descBool)
+	posts, err := models.GetInstance().GetPosts(slug, id, limitInt, sinceInt, sort, descBool)
 	if err != nil {
 		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s/%d"}`, messageCantFind, cantFindThread, slug, id)
@@ -68,19 +77,26 @@ func GetBranchMessagesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := json.Marshal(posts)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
+	if len(posts) == 0 {
+		_, err = w.Write([]byte(`[]`))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
+	} else {
+		data, err := json.Marshal(posts)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
+		_, err = w.Write(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 	}
-
 }

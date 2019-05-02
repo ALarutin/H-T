@@ -6,13 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 )
 
 func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
-
-	var user models.User
-
 	varMap := mux.Vars(r)
 	nickname, found := varMap["nickname"]
 	if !found {
@@ -21,16 +19,22 @@ func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	user.About = r.PostFormValue("about")
-	user.Email = r.PostFormValue("email")
-	user.Fullname = r.PostFormValue("fullname")
+	var user models.User
+
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
+
 	user.Nickname = nickname
 
 	u, err := models.GetInstance().UpdateUser(user)

@@ -22,8 +22,9 @@ func GetThreadInfoThreadHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(slug)
 	if err != nil {
-		id = 0
-		logger.Error.Println(err.Error())
+		id = -1
+	} else {
+		slug = ""
 	}
 
 	thread, err := models.GetInstance().GetThread(slug, id)
