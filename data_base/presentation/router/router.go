@@ -22,7 +22,7 @@ func GetRouter() (router *mux.Router) {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//forum
 
-	forumSubRouter := router.PathPrefix("/forum").Subrouter()
+	forumSubRouter := router.PathPrefix("/api/forum").Subrouter()
 
 	_forum := []Route{
 		{
@@ -72,7 +72,7 @@ func GetRouter() (router *mux.Router) {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//post
 
-	postSubRouter := router.PathPrefix("/post").Subrouter()
+	postSubRouter := router.PathPrefix("/api/post").Subrouter()
 
 	_post := []Route{
 		{
@@ -102,7 +102,7 @@ func GetRouter() (router *mux.Router) {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//service
 
-	serviceSubRouter := router.PathPrefix("/service").Subrouter()
+	serviceSubRouter := router.PathPrefix("/api/service").Subrouter()
 
 	_service := []Route{
 		{
@@ -132,7 +132,7 @@ func GetRouter() (router *mux.Router) {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//thread
 
-	threadSubRouter := router.PathPrefix("/thread").Subrouter()
+	threadSubRouter := router.PathPrefix("/api/thread").Subrouter()
 
 	_thread := []Route{
 		{
@@ -183,7 +183,7 @@ func GetRouter() (router *mux.Router) {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//user
 
-	userSubRouter := router.PathPrefix("/user").Subrouter()
+	userSubRouter := router.PathPrefix("/api/user").Subrouter()
 
 	_user := []Route{
 		{

@@ -9,7 +9,6 @@ import (
 
 func main() {
 	defer closer.Close()
-
 	r := router.GetRouter()
 	logger.Info.Printf("\nStarted listening at: 5000")
 	logger.Fatal.Println(http.ListenAndServe(":5000", r))

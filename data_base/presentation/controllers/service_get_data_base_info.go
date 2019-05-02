@@ -15,6 +15,10 @@ func GetDataBaseInfoHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
+	database.Post = database.Post - 1
+	database.User = database.User - 1
+	database.Forum = database.Forum - 1
+	database.Thread = database.Thread - 1
 
 	data, err := json.Marshal(database)
 	if err != nil {

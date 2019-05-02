@@ -1,48 +1,9 @@
-INFO: 2019/05/02 01:06:53 db.go:44: 
+INFO: 2019/05/02 16:33:31 db.go:44: 
 Successfully connected to database at: 5432
-INFO: 2019/05/02 01:06:53 main.go:14: 
+INFO: 2019/05/02 16:33:31 main.go:14: 
 Started listening at: 5000
-ERROR: 2019/05/02 01:06:56 thread_get_branch_messages.go:67: sql: expected 9 destination arguments in Scan, not 8
-INFO: 2019/05/02 01:06:56 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/2/posts
-start time: 56.814326ms
-INFO: 2019/05/02 01:09:03 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/2/posts
-start time: 26.813741ms
-INFO: 2019/05/02 01:09:25 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/2/posts
-start time: 28.336312ms
-INFO: 2019/05/02 01:09:36 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/2/posts
-start time: 25.626254ms
-INFO: 2019/05/02 01:10:51 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/3/posts
-start time: 693.567µs
-ERROR: 2019/05/02 01:11:07 thread_get_branch_messages.go:25: strconv.Atoi: parsing "fgfgfgaa": invalid syntax
-INFO: 2019/05/02 01:11:07 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/fgfgfgaa/posts
-start time: 27.061547ms
-ERROR: 2019/05/02 01:11:20 thread_get_branch_messages.go:25: strconv.Atoi: parsing "fgfgfgaa": invalid syntax
-INFO: 2019/05/02 01:11:20 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/fgfgfgaa/posts
-start time: 1.000182ms
-ERROR: 2019/05/02 01:11:29 thread_get_branch_messages.go:25: strconv.Atoi: parsing "fgfgfgaa": invalid syntax
-INFO: 2019/05/02 01:11:29 middleware.go:20: 
-method: [GET]
-addr: 127.0.0.1:51233
-path: /thread/fgfgfgaa/posts
-start time: 788.329µs
+INFO: 2019/05/02 16:44:51 middleware.go:20: 
+method: [POST]
+addr: [::1]:53466
+path: /api/user/at.ODqxuR2UG73z7U/create
+start time: 7.661019ms

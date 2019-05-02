@@ -47,7 +47,6 @@ type Post struct {
 	Message  string `json:"message"`
 	Parent   int    `json:"parent"`
 	Thread   int    `json:"threads"`
-	Path     []int  `json:"-"`
 }
 
 type PostInfo struct {

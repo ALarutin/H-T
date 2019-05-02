@@ -1,7 +1,5 @@
 package models
 
-import "github.com/lib/pq"
-
 const (
 	user   = "user"
 	forum  = "forum"
@@ -10,19 +8,21 @@ const (
 
 func (db *dbManager) UpdatePost(message string, id int) (post Post, err error) {
 	row := db.dataBase.QueryRow(
-		`SELECT * FROM func_update_post($1::text, $2::INT)`,
+		`SELECT id, author, thread, forum, message, is_edited, parent, created 
+				FROM func_update_post($1::text, $2::INT)`,
 		message, id)
 	err = row.Scan(&post.ID, &post.Author, &post.Thread, &post.Forum,
-		&post.Message, &post.IsEdited, &post.Parent, &post.Created, pq.Array(&post.Path))
+		&post.Message, &post.IsEdited, &post.Parent, &post.Created)
 	return
 }
 
 func (db *dbManager) GetPostInfo(id int, related []string) (postInfo PostInfo, err error) {
 	row := db.dataBase.QueryRow(
-		`SELECT * FROM func_get_post($1::INT)`, id)
+		`SELECT id, author, thread, forum, message, is_edited, parent, created 
+				FROM func_get_post($1::INT)`, id)
 	var post Post
 	err = row.Scan(&post.ID, &post.Author, &post.Thread, &post.Forum,
-		&post.Message, &post.IsEdited, &post.Parent, &post.Created, pq.Array(&post.Path))
+		&post.Message, &post.IsEdited, &post.Parent, &post.Created)
 	if err != nil {
 		return
 	}

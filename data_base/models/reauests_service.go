@@ -7,6 +7,6 @@ func (db *dbManager) ClearDatabase() (err error) {
 
 func (db *dbManager) GetDatabase() (database Database, err error) {
 	row := db.dataBase.QueryRow(`SELECT * FROM func_get_database()`)
-	err = row.Scan(&database.Thread, &database.Post, &database.Forum, &database.User)
+	err = row.Scan(&database.Forum, &database.Post, &database.Thread, &database.User)
 	return
 }

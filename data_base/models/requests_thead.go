@@ -4,14 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/lib/pq"
 )
 
 func (db *dbManager) CreatePost(post Post, id int, forum string) (p Post, err error) {
-	row := db.dataBase.QueryRow(`SELECT * FROM func_create_post($1::citext, $2::INT, $3::text, $4::INT, $5::citext)`,
+	row := db.dataBase.QueryRow(`SELECT id, author, thread, forum, message, is_edited, parent, created 
+										FROM func_create_post($1::citext, $2::INT, $3::text, $4::INT, $5::citext)`,
 		post.Author, id, post.Message, post.Parent, forum)
 	err = row.Scan(&p.ID, &p.Author, &p.Thread, &p.Forum,
-		&p.Message, &p.IsEdited, &p.Parent, &p.Created, pq.Array(&p.Path))
+		&p.Message, &p.IsEdited, &p.Parent, &p.Created)
 	return
 }
 
@@ -62,21 +62,24 @@ func getRowsForGetPosts(slug string, id int, limit int, since int, sort string, 
 	switch sort {
 	case "flat":
 		rows, err = db.dataBase.Query(
-			`SELECT * FROM func_get_posts_flat($1::citext, $2::INT, $3::INT, $4::INT, $5::BOOLEAN)`,
+			`SELECT id, author, thread, forum, message, is_edited, parent, created 
+					FROM func_get_posts_flat($1::citext, $2::INT, $3::INT, $4::INT, $5::BOOLEAN)`,
 			slug, id, limit, since, desc)
 		if err != nil {
 			return
 		}
 	case "tree":
 		rows, err = db.dataBase.Query(
-			`SELECT * FROM func_get_posts_tree($1::citext, $2::INT, $3::INT, $4::INT, $5::BOOLEAN)`,
+			`SELECT id, author, thread, forum, message, is_edited, parent, created
+					FROM func_get_posts_tree($1::citext, $2::INT, $3::INT, $4::INT, $5::BOOLEAN)`,
 			slug, id, limit, since, desc)
 		if err != nil {
 			return
 		}
 	case "parent_tree":
 		rows, err = db.dataBase.Query(
-			`SELECT * FROM func_get_posts_parent_tree($1::citext, $2::INT, $3::INT, $4::INT, $5::BOOLEAN)`,
+			`SELECT id, author, thread, forum, message, is_edited, parent, created
+					FROM func_get_posts_parent_tree($1::citext, $2::INT, $3::INT, $4::INT, $5::BOOLEAN)`,
 			slug, id, limit, since, desc)
 		if err != nil {
 			return

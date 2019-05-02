@@ -1,5 +1,11 @@
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- TABLES --------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
 -- table person
 CREATE TABLE person
 (
@@ -15,19 +21,6 @@ CREATE UNIQUE INDEX person_email_ui
 
 ALTER TABLE public.person
   ADD CONSTRAINT person_pk PRIMARY KEY (nickname);
-
-CREATE TYPE public.type_person AS
-  (
-  is_new BOOLEAN,
-  id BIGINT,
-  nickname citext,
-  email citext,
-  about text,
-  fullname text
-  );
-
-INSERT INTO public."person" (email, about, fullname, nickname)
-VALUES ('admin@admin.com', 'something', 'admin', 'admin');
 
 -- table forum
 CREATE TABLE forum
@@ -46,34 +39,6 @@ ALTER TABLE public.forum
 ALTER TABLE ONLY public.forum
   ADD CONSTRAINT "forum_user_fk" FOREIGN KEY (author) REFERENCES public.person (nickname);
 
-CREATE OR REPLACE FUNCTION update_forum_users_on_forum()
-  RETURNS trigger AS
-$BODY$
-BEGIN
-  INSERT INTO public."forum_users"(forum_slug, user_nickname)
-  VALUES (NEW."slug", NEW."author");
-  RETURN NULL;
-END;
-$BODY$
-  LANGUAGE plpgsql;
-
-CREATE TRIGGER update_forum_users_on_forum
-  AFTER INSERT
-  ON forum
-  FOR EACH ROW
-EXECUTE PROCEDURE update_forum_users_on_forum();
-
-CREATE TYPE public.type_forum AS
-  (
-  is_new BOOLEAN,
-  id BIGINT,
-  slug citext,
-  author citext,
-  title text,
-  posts INT,
-  threads INT
-  );
-
 -- table forum_users
 CREATE TABLE forum_users
 (
@@ -81,15 +46,14 @@ CREATE TABLE forum_users
   user_nickname citext NOT NULL
 );
 
+ALTER TABLE public.forum_users
+  ADD CONSTRAINT forum_users_pk PRIMARY KEY (forum_slug, user_nickname);
+
 ALTER TABLE ONLY public.forum_users
   ADD CONSTRAINT "forum_users_forum_slug_fk" FOREIGN KEY (forum_slug) REFERENCES public.forum (slug);
 
 ALTER TABLE ONLY public.forum_users
   ADD CONSTRAINT "forum_users_user_nickname_fk" FOREIGN KEY (user_nickname) REFERENCES public.person (nickname);
-
-INSERT INTO public."forum" (author, slug)
-VALUES ('admin', 'admin');
-
 
 -- table thread
 CREATE TABLE thread
@@ -115,6 +79,75 @@ ALTER TABLE ONLY public.thread
 
 ALTER TABLE ONLY public.thread
   ADD CONSTRAINT "thread_forum_fk" FOREIGN KEY (forum) REFERENCES public.forum (slug);
+
+-- table post
+CREATE TABLE post
+(
+  id        SERIAL                                             NOT NULL,
+  author    citext                                             NOT NULL,
+  thread    INT                                                NOT NULL,
+  forum     citext                                             NOT NULL,
+  message   text                     DEFAULT ''                NOT NULL,
+  is_edited BOOLEAN                  DEFAULT FALSE             NOT NULL,
+  parent    INT                                                NOT NULL,
+  created   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  post_path INT[]                    DEFAULT '{}'::INT[]
+);
+
+ALTER TABLE public.post
+  ADD CONSTRAINT post_pk PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.post
+  ADD CONSTRAINT "post_author_fk" FOREIGN KEY (author) REFERENCES public.person (nickname);
+
+ALTER TABLE ONLY public.post
+  ADD CONSTRAINT "post_thread_fk" FOREIGN KEY (thread) REFERENCES public.thread (id);
+
+ALTER TABLE ONLY public.post
+  ADD CONSTRAINT "post_forum_fk" FOREIGN KEY (forum) REFERENCES public.forum (slug);
+
+ALTER TABLE ONLY public.post
+  ADD CONSTRAINT "post_parent_fk" FOREIGN KEY (parent) REFERENCES public.post (id);
+
+-- table vote
+CREATE TABLE vote
+(
+  thread_slug   citext NOT NULL,
+  user_nickname citext NOT NULL,
+  voice         INT    NOT NULL
+);
+
+ALTER TABLE public.vote
+  ADD CONSTRAINT vote_pk PRIMARY KEY (thread_slug, user_nickname);
+
+ALTER TABLE ONLY public.vote
+  ADD CONSTRAINT "vote_thread_slug_fk" FOREIGN KEY (thread_slug) REFERENCES public.thread (slug);
+
+ALTER TABLE ONLY public.vote
+  ADD CONSTRAINT "vote_user_nickname_fk" FOREIGN KEY (user_nickname) REFERENCES public.person (nickname);
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- TRIGGERS ------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION update_forum_users_on_forum()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  INSERT INTO public."forum_users"(forum_slug, user_nickname)
+  VALUES (NEW."slug", NEW."author");
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER update_forum_users_on_forum
+  AFTER INSERT
+  ON forum
+  FOR EACH ROW
+EXECUTE PROCEDURE update_forum_users_on_forum();
 
 CREATE OR REPLACE FUNCTION update_threads_quantity()
   RETURNS trigger AS
@@ -150,52 +183,6 @@ CREATE TRIGGER update_forum_users_on_thread
   ON thread
   FOR EACH ROW
 EXECUTE PROCEDURE update_forum_users_on_thread();
-
-CREATE TYPE public.type_thread AS
-  (
-  is_new BOOLEAN,
-  id BIGINT,
-  slug citext,
-  author citext,
-  forum citext,
-  title text,
-  message text,
-  votes INT,
-  created TIMESTAMP WITH TIME ZONE
-  );
-
-INSERT INTO public."thread" (author, forum, slug)
-VALUES ('admin', 'admin', 'admin');
-
-
--- table post
-CREATE TABLE post
-(
-  id        SERIAL                                             NOT NULL,
-  author    citext                                             NOT NULL,
-  thread    INT                                                NOT NULL,
-  forum     citext                                             NOT NULL,
-  message   text                     DEFAULT ''                NOT NULL,
-  is_edited BOOLEAN                  DEFAULT FALSE             NOT NULL,
-  parent    INT                                                NOT NULL,
-  created   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  post_path INT[]                    DEFAULT '{}'::INT[]
-);
-
-ALTER TABLE public.post
-  ADD CONSTRAINT post_pk PRIMARY KEY (id);
-
-ALTER TABLE ONLY public.post
-  ADD CONSTRAINT "post_author_fk" FOREIGN KEY (author) REFERENCES public.person (nickname);
-
-ALTER TABLE ONLY public.post
-  ADD CONSTRAINT "post_thread_fk" FOREIGN KEY (thread) REFERENCES public.thread (id);
-
-ALTER TABLE ONLY public.post
-  ADD CONSTRAINT "post_forum_fk" FOREIGN KEY (forum) REFERENCES public.forum (slug);
-
-ALTER TABLE ONLY public.post
-  ADD CONSTRAINT "post_parent_fk" FOREIGN KEY (parent) REFERENCES public.post (id);
 
 CREATE OR REPLACE FUNCTION update_posts_quantity()
   RETURNS trigger AS
@@ -251,44 +238,11 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
-CREATE TRIGGER update_post
+CREATE TRIGGER update_post_path
   AFTER INSERT
   ON post
   FOR EACH ROW
 EXECUTE PROCEDURE update_post_path();
-
-CREATE TYPE public.type_post AS
-  (
-  id BIGINT,
-  author citext,
-  thread INT,
-  forum citext,
-  message text,
-  is_edited BOOLEAN,
-  parent INT,
-  created TIMESTAMP WITH TIME ZONE
-  );
-
-INSERT INTO public."post" (id, author, thread, forum, parent)
-VALUES (0, 'admin', '1', 'admin', 0);
-
-
--- table vote
-CREATE TABLE vote
-(
-  thread_slug   citext NOT NULL,
-  user_nickname citext NOT NULL,
-  voice         INT    NOT NULL
-);
-
-ALTER TABLE public.vote
-  ADD CONSTRAINT vote_pk PRIMARY KEY (thread_slug, user_nickname);
-
-ALTER TABLE ONLY public.vote
-  ADD CONSTRAINT "vote_thread_slug_fk" FOREIGN KEY (thread_slug) REFERENCES public.thread (slug);
-
-ALTER TABLE ONLY public.vote
-  ADD CONSTRAINT "vote_user_nickname_fk" FOREIGN KEY (user_nickname) REFERENCES public.person (nickname);
 
 CREATE OR REPLACE FUNCTION update_votes()
   RETURNS trigger AS
@@ -308,6 +262,59 @@ CREATE TRIGGER update_thread_votes
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- TYPES ---------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+CREATE TYPE public.type_person AS
+  (
+  is_new BOOLEAN,
+  id BIGINT,
+  nickname citext,
+  email citext,
+  about text,
+  fullname text
+  );
+
+CREATE TYPE public.type_forum AS
+  (
+  is_new BOOLEAN,
+  id BIGINT,
+  slug citext,
+  author citext,
+  title text,
+  posts INT,
+  threads INT
+  );
+
+CREATE TYPE public.type_thread AS
+  (
+  is_new BOOLEAN,
+  id BIGINT,
+  slug citext,
+  author citext,
+  forum citext,
+  title text,
+  message text,
+  votes INT,
+  created TIMESTAMP WITH TIME ZONE
+  );
+
+CREATE TYPE public.type_post AS
+  (
+  id BIGINT,
+  author citext,
+  thread INT,
+  forum citext,
+  message text,
+  is_edited BOOLEAN,
+  parent INT,
+  created TIMESTAMP WITH TIME ZONE,
+  post_path INT[]
+  );
+
 CREATE TYPE public.type_database AS
   (
   forum INT,
@@ -316,7 +323,13 @@ CREATE TYPE public.type_database AS
   person INT
   );
 
-CREATE OR REPLACE FUNCTION add_admin()
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- FUNCTIONS -----------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION func_add_admin()
   RETURNS VOID AS
 $BODY$
 BEGIN
@@ -338,7 +351,7 @@ $BODY$
 BEGIN
   TRUNCATE TABLE public.forum, public.forum_users, public.person, public.post, public.thread, public.vote
     RESTART IDENTITY;
-  PERFORM add_admin();
+  PERFORM func_add_admin();
 END;
 $BODY$
   LANGUAGE plpgsql;
@@ -712,14 +725,15 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION func_get_posts_flat(arg_slug citext, arg_id INT,  arg_limit INT, arg_since INT, arg_desc BOOLEAN)
+CREATE OR REPLACE FUNCTION func_get_posts_flat(arg_slug citext, arg_id INT, arg_limit INT, arg_since INT,
+                                               arg_desc BOOLEAN)
   RETURNS SETOF public.type_post
 AS
 $BODY$
 DECLARE
-  result public.type_post;
+  result        public.type_post;
   arg_thread_id INT;
-  rec    RECORD;
+  rec           RECORD;
 BEGIN
   SELECT id INTO arg_thread_id
   FROM public.thread
@@ -728,12 +742,12 @@ BEGIN
   IF NOT FOUND THEN
     RAISE no_data_found;
   END IF;
-  FOR rec IN SELECT id, author, thread, forum, message, is_edited, parent, created
+  FOR rec IN SELECT *
              FROM public.post
              WHERE thread = arg_thread_id
                AND id > arg_since
-             ORDER BY (CASE WHEN arg_desc THEN created END) DESC,
-                      (CASE WHEN NOT arg_desc THEN created END) ASC
+             ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
+                      (CASE WHEN NOT arg_desc THEN id END) ASC
              LIMIT arg_limit
     LOOP
       result.id := rec.id;
@@ -749,3 +763,101 @@ BEGIN
 END;
 $BODY$
   LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION func_get_posts_tree(arg_slug citext, arg_id INT, arg_limit INT, arg_since INT,
+                                               arg_desc BOOLEAN)
+  RETURNS SETOF public.type_post
+AS
+$BODY$
+DECLARE
+  result        public.type_post;
+  arg_thread_id INT;
+  rec           RECORD;
+BEGIN
+  SELECT id INTO arg_thread_id
+  FROM public.thread
+  WHERE slug = arg_slug
+     OR id = arg_id;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  FOR rec IN SELECT *
+             FROM public.post
+             WHERE thread = arg_thread_id
+               AND id > arg_since
+             ORDER BY (CASE WHEN arg_desc THEN post_path END) DESC,
+                      (CASE WHEN NOT arg_desc THEN post_path END) ASC
+             LIMIT arg_limit
+    LOOP
+      result.id := rec.id;
+      result.author := rec.author;
+      result.thread := rec.thread;
+      result.forum := rec.forum;
+      result.message := rec.message;
+      result.is_edited := rec.is_edited;
+      result.parent := rec.parent;
+      result.created := rec.created;
+      result.post_path := rec.post_path;
+      RETURN next result;
+    END LOOP;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_get_posts_parent_tree(arg_slug citext, arg_id INT, arg_limit INT, arg_since INT,
+                                                      arg_desc BOOLEAN)
+  RETURNS SETOF public.type_post
+AS
+$BODY$
+DECLARE
+  result        public.type_post;
+  arg_thread_id INT;
+  rec           RECORD;
+BEGIN
+  SELECT id INTO arg_thread_id
+  FROM public.thread
+  WHERE slug = arg_slug
+     OR id = arg_id;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  FOR rec IN
+    WITH parents AS (SELECT id as p_id
+                     FROM public.post
+                     WHERE thread = arg_thread_id
+                       AND id > arg_since
+                       AND parent = 0
+                     ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
+                              (CASE WHEN NOT arg_desc THEN id END) ASC
+                     LIMIT arg_limit)
+      SELECT *
+      FROM public.post
+      WHERE thread = arg_thread_id
+        AND post_path [ 2] IN (SELECT p_id FROM parents)
+      ORDER BY (CASE WHEN arg_desc THEN post_path [ 2] END) DESC, post_path,
+               (CASE WHEN NOT arg_desc THEN post_path [ 2] END) ASC, post_path
+    LOOP
+      result.id := rec.id;
+      result.author := rec.author;
+      result.thread := rec.thread;
+      result.forum := rec.forum;
+      result.message := rec.message;
+      result.is_edited := rec.is_edited;
+      result.parent := rec.parent;
+      result.created := rec.created;
+      result.post_path := rec.post_path;
+      RETURN next result;
+    END LOOP;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- FUNCTIONS CALL ------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+SELECT *
+FROM func_add_admin()
