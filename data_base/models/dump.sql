@@ -1,3 +1,5 @@
+CREATE SCHEMA public;
+
 CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -45,9 +47,6 @@ CREATE TABLE forum_users
   forum_slug    citext NOT NULL,
   user_nickname citext NOT NULL
 );
-
-ALTER TABLE public.forum_users
-  ADD CONSTRAINT forum_users_pk PRIMARY KEY (forum_slug, user_nickname);
 
 ALTER TABLE ONLY public.forum_users
   ADD CONSTRAINT "forum_users_forum_slug_fk" FOREIGN KEY (forum_slug) REFERENCES public.forum (slug);
@@ -132,23 +131,6 @@ ALTER TABLE ONLY public.vote
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION update_forum_users_on_forum()
-  RETURNS trigger AS
-$BODY$
-BEGIN
-  INSERT INTO public."forum_users"(forum_slug, user_nickname)
-  VALUES (NEW."slug", NEW."author");
-  RETURN NULL;
-END;
-$BODY$
-  LANGUAGE plpgsql;
-
-CREATE TRIGGER update_forum_users_on_forum
-  AFTER INSERT
-  ON forum
-  FOR EACH ROW
-EXECUTE PROCEDURE update_forum_users_on_forum();
-
 CREATE OR REPLACE FUNCTION update_threads_quantity()
   RETURNS trigger AS
 $BODY$
@@ -163,7 +145,7 @@ $BODY$
 
 CREATE TRIGGER update_forum_threads
   AFTER INSERT
-  ON thread
+  ON public.thread
   FOR EACH ROW
 EXECUTE PROCEDURE update_threads_quantity();
 
@@ -180,7 +162,24 @@ $BODY$
 
 CREATE TRIGGER update_forum_users_on_thread
   AFTER INSERT
-  ON thread
+  ON public.thread
+  FOR EACH ROW
+EXECUTE PROCEDURE update_forum_users_on_thread();
+
+CREATE OR REPLACE FUNCTION update_forum_users_on_post()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  INSERT INTO public."forum_users"(forum_slug, user_nickname)
+  VALUES (NEW."forum", NEW."author");
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER update_forum_users_on_thread
+  AFTER INSERT
+  ON public.post
   FOR EACH ROW
 EXECUTE PROCEDURE update_forum_users_on_thread();
 
@@ -198,27 +197,9 @@ $BODY$
 
 CREATE TRIGGER update_forum_posts
   AFTER INSERT
-  ON post
+  ON public.post
   FOR EACH ROW
 EXECUTE PROCEDURE update_posts_quantity();
-
-CREATE OR REPLACE FUNCTION update_post_quantity()
-  RETURNS trigger AS
-$BODY$
-BEGIN
-  UPDATE public."post"
-  SET is_edited = TRUE
-  WHERE "id" = NEW."id";
-  RETURN NULL;
-END;
-$BODY$
-  LANGUAGE plpgsql;
-
-CREATE TRIGGER update_post
-  AFTER UPDATE OF message
-  ON post
-  FOR EACH ROW
-EXECUTE PROCEDURE update_post_quantity();
 
 CREATE OR REPLACE FUNCTION update_post_path()
   RETURNS trigger AS
@@ -240,7 +221,7 @@ $BODY$
 
 CREATE TRIGGER update_post_path
   AFTER INSERT
-  ON post
+  ON public.post
   FOR EACH ROW
 EXECUTE PROCEDURE update_post_path();
 
@@ -258,7 +239,7 @@ $BODY$
 
 CREATE TRIGGER insert_thread_votes
   AFTER INSERT
-  ON vote
+  ON public.vote
   FOR EACH ROW
 EXECUTE PROCEDURE insert_votes();
 
@@ -278,7 +259,7 @@ $BODY$
 
 CREATE TRIGGER update_thread_votes
   AFTER UPDATE
-  ON vote
+  ON public.vote
   FOR EACH ROW
 EXECUTE PROCEDURE update_votes();
 
@@ -594,7 +575,7 @@ END;
 $BODY$
   LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION func_get_users(arg_slug citext, arg_since INT, arg_desc BOOLEAN, arg_limit INT)
+CREATE OR REPLACE FUNCTION func_get_users(arg_slug citext, arg_since citext, arg_desc BOOLEAN, arg_limit INT)
   RETURNS SETOF public.type_person
 AS
 $BODY$
@@ -608,9 +589,12 @@ BEGIN
              WHERE nickname IN (SELECT user_nickname
                                 FROM public.forum_users
                                 WHERE forum_slug = arg_slug)
-               AND id > arg_since
-             ORDER BY (CASE WHEN arg_desc THEN id END) DESC,
-                      (CASE WHEN NOT arg_desc THEN id END) ASC
+               AND CASE
+                     WHEN arg_since = '' THEN true
+                     WHEN arg_desc THEN nickname < arg_since
+                     ELSE nickname > arg_since END
+             ORDER BY (CASE WHEN arg_desc THEN nickname END) DESC,
+                      (CASE WHEN NOT arg_desc THEN nickname END) ASC
              LIMIT arg_limit
     LOOP
       result.is_new := false;
@@ -652,8 +636,18 @@ CREATE OR REPLACE FUNCTION func_create_post(arg_author citext, arg_id INT, arg_m
 AS
 $BODY$
 DECLARE
-  result public.type_post;
+  result          public.type_post;
+  parent_thread   INT;
+  author_nickname citext;
 BEGIN
+  SELECT nickname INTO author_nickname FROM public.person WHERE nickname = arg_author;
+  IF NOT FOUND THEN
+    RAISE no_data_found;
+  END IF;
+  SELECT thread INTO parent_thread FROM public.post WHERE id = arg_parent;
+  IF arg_parent != '0' AND parent_thread != arg_id THEN
+    RAISE foreign_key_violation;
+  END IF;
   INSERT INTO public.post(author, thread, forum, message, parent, created)
   VALUES (arg_author, arg_id, arg_forum, arg_message, arg_parent, arg_created) RETURNING *
     INTO result.id, result.author, result.thread, result.forum,
@@ -674,8 +668,12 @@ DECLARE
   result public.type_thread;
 BEGIN
   UPDATE public.thread
-  SET message = arg_message,
-      title   = arg_title
+  SET message = CASE
+                  WHEN arg_message != '' THEN arg_message
+                  ELSE message END,
+      title   = CASE
+                  WHEN arg_title != '' THEN arg_title
+                  ELSE title END
   WHERE slug = arg_slug
      OR id = arg_id RETURNING *
     INTO result.id, result.slug, result.author, result.forum,
@@ -730,12 +728,18 @@ CREATE OR REPLACE FUNCTION func_update_post(arg_message text, arg_id INT)
 AS
 $BODY$
 DECLARE
-  result public.type_post;
+  result          public.type_post;
+  arg_old_message text;
 BEGIN
-  UPDATE public."post"
-  SET message   = arg_message,
-      is_edited = TRUE
-  WHERE id = $2 RETURNING * INTO result.id, result.author, result.thread, result.forum,
+  SELECT message INTO arg_old_message FROM public.post WHERE id = arg_id;
+  UPDATE public.post
+  SET message   = CASE
+                    WHEN arg_message != '' THEN arg_message
+                    ELSE message END,
+      is_edited = CASE
+                    WHEN arg_message != '' AND arg_old_message != arg_message THEN TRUE
+                    ELSE FALSE END
+  WHERE id = arg_id RETURNING * INTO result.id, result.author, result.thread, result.forum,
     result.message, result.is_edited, result.parent, result.created, result.post_path;
   IF NOT FOUND THEN
     RAISE no_data_found;
@@ -919,8 +923,9 @@ BEGIN
                    WHERE thread = arg_thread_id
                      AND CASE
                            WHEN arg_since = '0' THEN TRUE
-                           WHEN arg_desc THEN post_path[2] < (SELECT post_path[2] FROM public.post WHERE id = arg_since)
-                           ELSE post_path[2] > (SELECT post_path[2] FROM public.post WHERE id = arg_since) END)
+                           WHEN arg_desc THEN post_path [ 2] <
+                                              (SELECT post_path [ 2] FROM public.post WHERE id = arg_since)
+                           ELSE post_path [ 2] > (SELECT post_path [ 2] FROM public.post WHERE id = arg_since) END)
       SELECT *
       FROM public.post
       WHERE thread = arg_thread_id

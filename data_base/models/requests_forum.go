@@ -45,9 +45,9 @@ func (db *dbManager) GetThreads(slug string, since time.Time, desc bool, limit i
 	return
 }
 
-func (db *dbManager) GetUsers(slug string, since int, desc bool, limit int) (users []User, err error) {
+func (db *dbManager) GetUsers(slug string, since string, desc bool, limit int) (users []User, err error) {
 
-	rows, err := db.dataBase.Query(`SELECT * FROM func_get_users($1::citext, $2::INT, $3::BOOLEAN, $4::INT)`,
+	rows, err := db.dataBase.Query(`SELECT * FROM func_get_users($1::citext, $2::citext, $3::BOOLEAN, $4::INT)`,
 		slug, since, desc, limit)
 	if err != nil {
 		return

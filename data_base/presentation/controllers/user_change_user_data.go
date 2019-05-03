@@ -27,7 +27,6 @@ func ChangeUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

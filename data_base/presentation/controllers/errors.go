@@ -5,7 +5,7 @@ const (
 	cantFindUser         = `user with nickname `
 	cantFindThread       = `thread with slug or id `
 	cantFindForum        = `forum with slug `
-	cantFindParentOrUser = `parent or author`
+	cantFindParentOrUser = `parent or parent in another thread`
 	cantFindPost         = `post with id `
 	emailUsed            = ` has already taken by another user`
 )

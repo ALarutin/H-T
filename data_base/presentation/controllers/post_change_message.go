@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -27,16 +28,22 @@ func ChangeMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	message := r.PostFormValue("message")
+	var post models.Post
+	err = json.Unmarshal(body, &post)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error.Println(err.Error())
+		return
+	}
 
-	post, err := models.GetInstance().UpdatePost(message, id)
+	post, err = models.GetInstance().UpdatePost(post.Message, id)
 	if err != nil {
 		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%v"}`, messageCantFind, cantFindPost, id)

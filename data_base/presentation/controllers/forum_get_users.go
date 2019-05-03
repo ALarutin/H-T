@@ -3,6 +3,7 @@ package controllers
 import (
 	"data_base/models"
 	"data_base/presentation/logger"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -20,28 +21,24 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit := r.URL.Query().Get("limit")
-	since := r.URL.Query().Get("since")
-	var sinceInt int
-	if since == "" {
-		sinceInt = 0
+	var limitInt int
+	if limit == "" {
+		limitInt = 100
 	} else {
-		sinceInt, err := strconv.Atoi(limit)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			logger.Error.Println(err.Error())
-			return
-
-		}
+		limitInt, _ = strconv.Atoi(limit)
 	}
+
+	since := r.URL.Query().Get("since")
+
 	desc := r.URL.Query().Get("desc")
+	var descBool bool
+	if desc == "true" {
+		descBool = true
+	} else if desc == "false" {
+		descBool = false
+	}
 
-	logger.Debug.Print(slug)
-	logger.Debug.Print(limit)
-	logger.Debug.Print(since)
-	logger.Debug.Print(sinceInt)
-	logger.Debug.Print(desc)
-
-	users, err := models.GetInstance().GetUsers(slug, sinceInt, desc, limitInt)
+	users, err := models.GetInstance().GetUsers(slug, since, descBool, limitInt)
 	if err != nil {
 		if err.Error() == errorPqNoDataFound {
 			myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindForum, slug)
@@ -59,18 +56,26 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := json.Marshal(users)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Error.Println(err.Error())
-		return
+	if len(users) == 0 {
+		_, err = w.Write([]byte(`[]`))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
+	}else {
+		data, err := json.Marshal(users)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
+		_, err = w.Write(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error.Println(err.Error())
+			return
+		}
 	}
 }

@@ -68,9 +68,19 @@ func CreatNewPostHandler(w http.ResponseWriter, r *http.Request) {
 	for _, post := range inputPosts {
 		post, err = models.GetInstance().CreatePost(post, created, thread.ID, thread.Forum)
 		if err != nil {
+			if err.Error() == errorPqNoDataFound {
+				myJSON := fmt.Sprintf(`{"%s%s%s"}`, messageCantFind, cantFindUser, post.Author)
+				w.WriteHeader(http.StatusNotFound)
+				_, err = w.Write([]byte(myJSON))
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					logger.Error.Println(err.Error())
+					return
+				}
+				return
+			}
 			if err.Error() == errorForeignKeyViolation {
-				myJSON := fmt.Sprintf(`{"%s%s"}`,
-					messageCantFind, cantFindParentOrUser)
+				myJSON := fmt.Sprintf(`{"%s%s"}`, messageCantFind, cantFindParentOrUser)
 				w.WriteHeader(http.StatusConflict)
 				_, err = w.Write([]byte(myJSON))
 				if err != nil {
